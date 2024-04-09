@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Admin
+{% endblock %}
+
+{% block main %}
+
+<!-- 
+<div class="container" style="background-color: #FBF8BE;">
+        <h1>Note Post</h1>
+            <form action="/admin" method="post">
+                <textarea cols="40" rows="1" maxlength="120" name="body" placeholder="120 character limit"></textarea>
+                <input type="submit" value="Add Note">
+            </form>
+
+
+        {% for note in notes %}
+        <div class="list-group-item">
+            <input type="hidden" name="noteId" value="{{ note.id }}">
+            <p>{{ note.body }}</p>
+
+            <form action="/admin/delete-note" method="post">
+                <input type="hidden" name="note" value="delete">
+                <input type="hidden" name="noteId" value="{{ note.id }}">
+                <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ note.body }}');">Delete</button>
+            </form>
+        </div>
+        {% endfor %}
+</div>
+-->
+
+{% for entry in entries %}
+<div class="container">
+    <div class="bg-light list-group-item">
+        <h6>{{ entry.timestamp }}</h6>
+        <h6>Van:{{ entry.van }}</h6>
+            <form action="entry" method="post">
+                <input type="hidden" name="entryId" value="{{ entry.id }}">
+                <input type="submit" class="btn btn-info" value="View Entry">
+            </form>
+    </div>
+</div>
+
+    <div>
+        <form action="/entry/delete-entry" method="post">
+            <input type="hidden" name="entryId" value="{{ entryDetail.id }}">
+            <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ entryDetail.body }}');">Delete</button>
+        </form>
+    </div>
+{% endfor %}
+
+
+    <div class="container colored-container">
+
+        <div class="section">
+            <h2>Van Identifications</h2>
+        </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Van</th>
+                        <th>Liscense Plate</th>
+                        <th>VIN Number</th>
+                    </tr>
+                </thead>
+                
+                <input type="text" id="searchBar" placeholder="Search by Liscense, VIN, or Van...">
+
+                <table id="vanTable" class="table table-bordered">
+                    <tbody>
+                        <tr><td>G1</td><td>108936C</td><td>3C6URVJG8KE545204</td></tr>
+                        <tr><td>G2</td><td>108939C</td><td>3C6URVJG2KE541746</td></tr>
+                        <tr><td>G3</td><td>108923C</td><td>3C6URVJG7KE546666</td></tr>
+                        <tr><td>G4</td><td>131737C</td><td>3C6URVJG6LE112921</td></tr>
+                        <tr><td>G5</td><td>108940C</td><td>3C6URVJGXKE545205</td></tr>
+                        <tr><td>G6</td><td>108929C</td><td>3C6URVJG7KE545243</td></tr>
+                        <tr><td>G7</td><td>108970C</td><td>3C6URVJG7KE543721</td></tr>
+                        <tr><td>G8</td><td>108966C</td><td>3C6URVJG6KE553303</td></tr>
+                        <tr><td>G9</td><td>108972C</td><td>3C6URVJGXKE551280</td></tr>
+                        <tr><td>G10</td><td>135197C</td><td>3C6URVJG5LE112909</td></tr>
+                        <tr><td>G11</td><td>108945C</td><td>3C6URVJG1KE551331</td></tr>
+                        <tr><td>G12</td><td>108959C</td><td>3C6URVJG9KE551318</td></tr>
+                        <tr><td>G13</td><td>108965C</td><td>3C6URVJG0KE551384</td></tr>
+                        <tr><td>G14</td><td>108968C</td><td>3C6URVJG4KE551291</td></tr>
+                        <tr><td>G15</td><td>108964C</td><td>3C6URVJGXKE551358</td></tr>
+                        <tr><td>G16</td><td>108969C</td><td>3C6URVJG3KE551296</td></tr>
+                        <tr><td>G17</td><td>108941C</td><td>3C6URVJG3KE546664</td></tr>
+                        <tr><td>G18</td><td>108942C</td><td>3C6URVJG6KE551373</td></tr>
+                        <tr><td>G19</td><td>108943C</td><td>3C6URVJGXKE551327</td></tr>
+                        <tr><td>G20</td><td>108939C</td><td>3C6URVJG9KE541677</td></tr>
+                        <tr><td>G21</td><td>131796C</td><td>3C6URVJG2LE113144</td></tr>
+                        <tr><td>G22</td><td>135204C</td><td>3C6URVJG8LE117182</td></tr>
+                        <tr><td>G23</td><td>131776C</td><td>3C6URVJGXLE113117</td></tr>
+                        <tr><td>G24</td><td>135193C</td><td>3C6URVJG9LE113156</td></tr>
+                        <tr><td>G25</td><td>135203C</td><td>3C6URVJG9LE116686</td></tr>
+                        <tr><td>G26</td><td>135362C</td><td>3C6URVJG1LE113135</td></tr>
+                        <tr><td>G27</td><td>135202C</td><td>3C6URVJG7LE117920</td></tr>
+                        <tr><td>G28</td><td>131798C</td><td>3C6URVJG9LE113142</td></tr>
+                        <tr><td>G29</td><td>135356C</td><td>3C6URVJG0LE113112</td></tr>
+                        <tr><td>G53</td><td>173883C</td><td>3C6LRVBG4NE139466</td></tr>
+                        <tr><td>G54</td><td>173882C</td><td>3C6LRVBG8NE139468</td></tr>
+                        <tr><td>G55</td><td>173881C</td><td>3C6LRVBG6NE139467</td></tr>
+                        <tr><td>G56</td><td>2988092B</td><td>3C6TRVBG3LE134868</td></tr>                
+                        <tr><td>G57</td><td>2864062B</td><td>3C6TRVBG5LE134869</td></tr>
+                    </tbody>
+                </table>
+        
+            </table>
+    </div>
+
+ <script>
+    document.getElementById('searchBar').addEventListener('input', function() {
+    // Get the query (convert it to uppercase for case-insensitive search)
+    var query = this.value.toUpperCase();
+
+    // Get the table rows
+    var rows = document.getElementById('vanTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    // Loop through the rows
+    for (var i = 0; i < rows.length; i++) {
+        // Get the columns (cells) of the current row
+        var cols = rows[i].getElementsByTagName('td');
+
+        // Assume the row doesn't match the query
+        var rowMatchesQuery = false;
+
+        // Check the Van (1st), License Plate (2nd), and VIN Number (3rd) columns
+        var columnsToCheck = [0, 1, 2]; // adjust as per your table column order
+        for (var j = 0; j < columnsToCheck.length; j++) {
+            var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+            if (cellText.includes(query)) {
+                // If cell text includes the query, this row matches
+                rowMatchesQuery = true;
+                break;
+            }
+        }
+
+        // Show/hide the row depending on whether it matches the query
+        rows[i].style.display = rowMatchesQuery ? '' : 'none';
+    }
+});
+
+ </script>
+    
+
+<script>
+function confirmDelete(content) {
+    var message = "Are you sure you want to delete the following entry?\n\n";
+    message += "Content: " + content;
+
+    return confirm(message);
+}
+</script>
+
+{% endblock %}

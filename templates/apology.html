@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Apology
+{% endblock %}
+
+{% block main %}
+    <!-- https://memegen.link/ -->
+    <img alt="{{ top }}" class="border img-fluid" src="http://memegen.link/custom/{{ top | urlencode }}/{{ bottom | urlencode }}.jpg?alt=https://www.gannett-cdn.com/presto/2020/11/10/PDTF/943a7a6e-f230-4ff9-b3fc-b67f64dffbb3-IMG_0152.jpg?width=660&height=568&fit=crop&format=pjpg&auto=webp&width=400" title="{{ top }}">
+{% endblock %}

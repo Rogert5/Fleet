@@ -1,0 +1,23 @@
+
+{% extends "layout.html" %}
+
+{% block title %}
+    Passcode
+{% endblock %}
+
+{% block main %}
+<html>
+    <title>Passcode Page</title>
+    <div class="container">
+      <h1>Please enter passcode</h1>
+      <form method="post" action="/passcode">
+        <input type="text" name="passcode" />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+    <footer>
+      *Supervisor access only*
+    </footer>
+  </body>
+</html>
+{% endblock %}

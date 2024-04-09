@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Inbox
+{% endblock %}
+{% block main %}
+
+<!--Compose messege were recipient is automatically assigned to send to main username account (abb)-->
+<div class="container">
+    <form action="/compose" method="post">
+        <!--div makes van input only 2 digits that are intigers only-->
+        <div class="mb-3">
+        <h4>Van Number</h4>
+            <input maxlength="2" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(numbers only)">
+        </div>
+        <h3>Maintenance</h3>
+<!-- "character only 200 length maximum per entry" -->
+        <div class="mb-3">
+            <textarea cols="50" rows="5" maxlength="200" name="body" placeholder="200 character limit"></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Send</button>
+    </form>
+</div>
+
+<div id="container-sent">
+    <h1>List</h1>
+    <form id="order-form">
+        <div class="mb-3">
+            <label for="order-by-select">Order by:</label>
+            <select name="order_by" id="order-by-select">
+                <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
+                <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
+            </select>
+            <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
+        </div>
+    </form>
+
+    {% for entry in entries %}
+        <div class="entry list-group-item" id="entry-{{ entry.id }}">
+        <div class="entry-meta">
+            <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
+            <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
+        </div>
+
+            <div class="entry-body">
+                <p>{{ entry.body }}</p>
+            </div>
+            
+
+
+                <div class="buttons">         
+                    <!--Edit Button-->
+                    <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
+
+                    <!--DELETE Form-->
+                    <form action="/inbox/delete-entry" method="post">
+                        <input type="hidden" name="page" value="inbox">
+                        <input type="hidden" name="entryId" value="{{ entry.id }}">
+                        <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}');">Delete</button>
+                    </form>
+                </div>
+            
+        </div>
+        
+    {% endfor %}
+    
+            <!-- Edit Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="edit-textarea" class="form-control" rows="5"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="submit-edit">Submit Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!--EDIT BUTTON SCRIPT-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // When the Edit button is clicked, show the modal and populate the textarea
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const entryId = this.getAttribute('data-entry-id');
+                const currentContent = document.querySelector(`#entry-${entryId} .entry-body p`).textContent;
+
+                document.getElementById('edit-textarea').value = currentContent;
+                // Use Bootstrap's Modal functionality to show the modal
+                const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                editModal.show();
+
+                // When the Submit button in the modal is clicked, send the updated content to the server
+                document.getElementById('submit-edit').addEventListener('click', function() {
+                    const updatedContent = document.getElementById('edit-textarea').value;
+
+                    fetch(`/update_entry/${entryId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ body: updatedContent })
+                    })
+                    .then(response => response.json())
+                    //update to current "date" upon edit
+                    .then(data => {
+                        if (data.status === "success") {
+                            // Update the content on the page and close the modal
+                            document.querySelector(`#entry-${entryId} .entry-body p`).textContent = updatedContent;
+                            // Update the timestamp on the page
+                            document.querySelector(`#entry-${entryId} .entry-meta p`).textContent = 'Just now'; // Or format accordingly
+                            editModal.hide();
+                        }
+                    });
+                });
+            });
+        });
+    });
+</script>
+
+
+
+<!-- Order by - option for listed entries (date or van) -->
+<script>
+    document.getElementById('apply-button').addEventListener('click', function() {
+        var form = document.getElementById('order-form');
+        var orderSelect = document.getElementById('order-by-select');
+        var selectedOrder = orderSelect.options[orderSelect.selectedIndex].value;
+        form.action = '/inbox?order_by=' + selectedOrder;
+        form.submit();
+    });
+</script>
+
+<!-- Confirm Delete Pop up script -->
+<script>
+function confirmDelete(timestamp, van, body) {
+    var message = "Are you sure you want to delete the following entry?\n\n";
+    message += "Timestamp: " + timestamp + "\n";
+    message += "Van Number: " + van + "\n";
+    message += "Body: " + body;
+
+    return confirm(message);
+}
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Entries
+{% endblock %}
+
+{% block main %}
+
+<!--Entry display of only Van and Date for easier navigation of user admin-->
+<h4>Index</h4>
+    <div>
+        {% for entry in entries %}
+<div class="container">
+        <div class="list-group-item">
+            <h6>{{ entry.timestamp }}</h6>
+            <h6>Van:{{ entry.van }}</h6>
+        <form action="entry" method="post">
+            <input type="hidden" name="entryId" value="{{ entry.id }}">
+            <input type="submit" class="btn btn-info" value="View Entry">
+        </form>
+        </div>
+</div>
+        {% endfor %}
+    </div>
+{% endblock %}
