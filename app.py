@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 from urllib.parse import urlparse
@@ -41,7 +41,19 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(2), nullable=False)
     body = db.Column(db.String(200), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    # Define a function to get the default timestamp value in CST
+    @staticmethod
+    def default_cst_timestamp():
+        # Get the current UTC time
+        utc_now = datetime.utcnow()
+        # Convert UTC time to CST
+        cst_time = convert_utc_to_cst(utc_now)
+        return cst_time
+
+    # Define the timestamp column with the default value as CST time
+    timestamp = db.Column(db.DateTime, nullable=False, default=default_cst_timestamp)
+
 
 
 #Defines Note used in Admin page to send post it notes between management
@@ -50,6 +62,14 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+# Define a function to convert UTC to CST
+def convert_utc_to_cst(utc_time):
+    # Calculate the time difference between UTC and CST (UTC-6 hours)
+    cst_offset = timedelta(hours=-6)
+    # Add the offset to the UTC time
+    cst_time = utc_time + cst_offset
+    return cst_time
 
 # Create tables
 with app.app_context():
@@ -74,15 +94,24 @@ def delete_entry():
 def home():
     return render_template("home.html")
 
-#compose route meant to attain user id for when entry is submitted
+#compose route for entry in Inbox.html
 @app.route("/compose", methods=["GET", "POST"])
 def compose():
     if request.method == "POST":
         van = request.form.get("van")
         body = request.form.get("body")
 
+        # Get the current UTC time
+        utc_now = datetime.utcnow()
+        # Convert UTC time to CST
+        cst_time = convert_utc_to_cst(utc_now)
 
-        entry = Entry(van=van, body=body)
+        if not van.isdigit() or not ((1 <= int(van) <= 29) or (52 <= int(van) <= 57)):
+            apology_message = "Sorry, only numbers between 1-29 and 52-57 are allowed in the Van section. DO NOT ADD LETTER G"
+            return render_template("apology.html", top="Error", bottom=apology_message)
+
+
+        entry = Entry(van=van, body=body, timestamp=cst_time)  # Include timestamp parameter
         db.session.add(entry)
         db.session.commit()
 
@@ -143,7 +172,7 @@ def inbox():
     return render_template("inbox.html", entries=entry_list, order_by=order_by)
 
 
-#Edit button from inbox page for editing entries
+# Edit button from inbox page for editing entries
 @app.route("/update_entry/<int:entry_id>", methods=["POST"])
 def update_entry(entry_id):
     # Retrieve the updated content from the request body
@@ -157,13 +186,19 @@ def update_entry(entry_id):
     if not entry:
         return jsonify({"status": "error", "message": "Entry not found."}), 404
 
-    # Update the entry's body and commit the changes to the database
+    # Update the entry's body
     entry.body = new_body
     
-    # Update the entry's timestamp to the current date and time
-    entry.timestamp = datetime.utcnow()
+    # Get the current UTC time
+    utc_now = datetime.utcnow()
+    # Convert UTC time to CST
+    cst_time = convert_utc_to_cst(utc_now)
+    # Update the entry's timestamp to CST time
+    entry.timestamp = cst_time
 
+    # Commit the changes to the database
     db.session.commit()
+    
     return jsonify({"status": "success", "message": "Entry updated successfully."})
 
 
