@@ -106,8 +106,8 @@ def compose():
         # Convert UTC time to CST
         cst_time = convert_utc_to_cst(utc_now)
 
-        if not van.isdigit() or not ((1 <= int(van) <= 29) or (52 <= int(van) <= 57)):
-            apology_message = "Sorry, only numbers between 1-29 and 52-57 are allowed in the Van section. DO NOT ADD LETTER G"
+        if not van.isdigit() or not ((1 <= int(van) <= 29) or (52 <= int(van) <= 58)):
+            apology_message = "Sorry, only numbers between 1-29 and 52-58 are allowed. DO NOT ADD LETTER G"
             return render_template("apology.html", top="Error", bottom=apology_message)
 
 
@@ -204,7 +204,7 @@ def update_entry(entry_id):
 
 
 
-# Delete note from the database
+# Delete note from the databasegit a
 @app.route("/admin/delete-note", methods=["POST"])
 def delete_note():
     note_id = request.form.get("noteId")
