@@ -29,7 +29,8 @@ def after_request(response):
 
 # Configure database
 #{sgmm+VzG7VE@127.0.0.1:3306/fleet_db
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://mydb_root_user@localhost/fleet_db"
+#mysql+pymysql://mydb_root_user@localhost/fleet_db
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://u5jrt73t4bhb7a:p6e489bf1e00f874e5b60cecdc4ee2513987f0270a6470c095fb5983df1e1fd3f@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/der06trr78933f"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Create database object
