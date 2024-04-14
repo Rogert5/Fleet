@@ -1,5 +1,5 @@
 ajax==3.0.0
-altgraph @ file:///System/Volumes/Data/SWE/Apps/DT/BuildRoots/BuildRoot2/ActiveBuildRoot/Library/Caches/com.apple.xbs/Sources/python3/python3-124/altgraph-0.17.2-py2.py3-none-any.whl
+altgraph==0.17.2
 apologies==0.1.43
 asgiref==3.7.2
 attrs==22.2.0
@@ -15,12 +15,11 @@ decorator==5.1.1
 Django==4.2.5
 django-appconf==1.0.5
 exceptiongroup==1.1.1
-flash==1.0.3
 Flask==2.2.3
 Flask-Login==0.6.2
 Flask-Session==0.4.0
 Flask-SQLAlchemy==3.0.3
-future @ file:///System/Volumes/Data/SWE/Apps/DT/BuildRoots/BuildRoot2/ActiveBuildRoot/Library/Caches/com.apple.xbs/Sources/python3/python3-124/future-0.18.2-py3-none-any.whl
+future==0.18.2
 greenlet==3.0.0
 gunicorn==20.1.0
 helpers==0.2.0
@@ -29,7 +28,7 @@ importlib-metadata==6.1.0
 itsdangerous==2.1.2
 Jinja2==3.1.2
 load-dotenv==0.1.0
-macholib @ file:///System/Volumes/Data/SWE/Apps/DT/BuildRoots/BuildRoot2/ActiveBuildRoot/Library/Caches/com.apple.xbs/Sources/python3/python3-124/macholib-1.15.2-py2.py3-none-any.whl
+macholib==1.15.2
 MarkupSafe==2.1.2
 mysql==0.0.3
 mysql-connector-python==8.0.32
@@ -48,7 +47,7 @@ SQLAlchemy==2.0.7
 sqlparse==0.4.3
 termcolor==2.2.0
 texts==0.1
-typing_extensions==4.5.0
+typing-extensions==4.5.0
 unicorn==2.0.1.post1
 urllib3==1.26.15
 Werkzeug==2.2.3
