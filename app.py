@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import os
+from app import db
 
 from urllib.parse import urlparse
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
@@ -28,10 +29,14 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+uri = os.getenv("DATABASE_URL")  # or other relevant config var
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+
 # Configure database
 #{sgmm+VzG7VE@127.0.0.1:3306/fleet_db (GODADDY CODE)
 #mysql+pymysql://mydb_root_user@localhost/fleet_db
-app.config["SQLALCHEMY_DATABASE_URI"] = 'postgres://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
+app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Create database object
