@@ -31,6 +31,9 @@ def create_app():
 
     return app
 
+# Create database object
+db = SQLAlchemy(app)
+
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -47,9 +50,6 @@ uri = os.getenv("DATABASE_URL")  # or other relevant config var
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
-
-# Create database object
-db = SQLAlchemy(app)
 
 
 # Define the Entry model used for inbox
