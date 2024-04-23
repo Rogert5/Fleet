@@ -13,10 +13,24 @@ from collections import defaultdict
 # Configure application
 app = Flask(__name__)
 
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+def create_app():
+    # Configure session to use filesystem (instead of signed cookies)
+    app.config["SESSION_PERMANENT"] = False
+    app.config["SESSION_TYPE"] = "filesystem"
+    Session(app)
+
+
+    # Configure database
+    #{sgmm+VzG7VE@127.0.0.1:3306/fleet_db (GODADDY CODE)
+    #mysql+pymysql://mydb_root_user@localhost/fleet_db
+    app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # Initialize SQLAlchemy with the app
+    db.init_app(app)
+
+    return app
+
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -33,11 +47,6 @@ uri = os.getenv("DATABASE_URL")  # or other relevant config var
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
-# Configure database
-#{sgmm+VzG7VE@127.0.0.1:3306/fleet_db (GODADDY CODE)
-#mysql+pymysql://mydb_root_user@localhost/fleet_db
-app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Create database object
 db = SQLAlchemy(app)
@@ -225,4 +234,5 @@ def delete_note():
 
 
 if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True)
