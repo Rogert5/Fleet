@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 import os
-from app import db
 
 from urllib.parse import urlparse
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
