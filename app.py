@@ -9,7 +9,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
-from . import app
 
 
 # Configure application
@@ -33,6 +32,7 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
 
 if __name__ == "__main__":
     app = create_app()
