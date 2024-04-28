@@ -33,6 +33,11 @@ def after_request(response):
     return response
 
 
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
