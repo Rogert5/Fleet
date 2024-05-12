@@ -38,7 +38,7 @@ def after_request(response):
 #postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd
 #{sgmm+VzG7VE@127.0.0.1:3306/fleet_db (GODADDY CODE)
 #mysql+pymysql://mydb_root_user@localhost/fleet_db (LOCAL CODE)
-app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
+app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://mydb_root_user@localhost/fleet_db'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Create database object
@@ -84,19 +84,18 @@ def convert_utc_to_cst(utc_time):
 with app.app_context():
     db.create_all()
 
-#Delete entry from inbox
+# Delete entry from inbox
 @app.route("/inbox/delete-entry", methods=["POST"])
 def delete_entry():
-    page = request.form.get("page")
-    entry_id = request.form.get("entryId")
+    entry_id = request.json.get("entryId")  # Use request.json to access JSON data
     if entry_id:
         entry = Entry.query.get(entry_id)
         if entry:
             db.session.delete(entry)
             db.session.commit()
-
-    flash("Entry Deleted",)
-    return redirect("/inbox")
+            return jsonify({'status': 'success'})
+    
+    return jsonify({'status': 'error'})
 
 # home page route
 @app.route("/")

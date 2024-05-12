@@ -36,32 +36,24 @@
     </form>
 
     {% for entry in entries %}
-        <div class="entry list-group-item" id="entry-{{ entry.id }}">
+    <div class="entry list-group-item" id="entry-{{ entry.id }}">
         <div class="entry-meta">
             <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
             <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
         </div>
-
-            <div class="entry-body">
-                <p>{{ entry.body }}</p>
-            </div>
-            
-
-
-                <div class="buttons">         
-                    <!--Edit Button-->
-                    <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
-
-                    <!--DELETE Form-->
-                    <form action="/inbox/delete-entry" method="post">
-                        <input type="hidden" name="page" value="inbox">
-                        <input type="hidden" name="entryId" value="{{ entry.id }}">
-                        <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}');">Delete</button>
-                    </form>
-                </div>
-            
+        <div class="entry-body">
+            <p>{{ entry.body }}</p>
         </div>
-        
+        <div class="buttons">         
+            <!--Edit Button-->
+            <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
+            <!--DELETE Form-->
+            <form class="delete-form">
+                <input type="hidden" name="entryId" value="{{ entry.id }}">
+                <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}');">Delete</button>
+            </form>
+        </div>
+    </div>
     {% endfor %}
     
             <!-- Edit Modal -->
@@ -83,6 +75,27 @@
             </div>
         </div>
     
+<!-- Delete confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteConfirmationModalLabel">Entry Deleted</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Entry has been successfully deleted.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
 </div>
 
 
@@ -144,16 +157,49 @@
     });
 </script>
 
-<!-- Confirm Delete Pop up script -->
-<script>
-function confirmDelete(timestamp, van, body) {
-    var message = "Are you sure you want to delete the following entry?\n\n";
-    message += "Timestamp: " + timestamp + "\n";
-    message += "Van Number: " + van + "\n";
-    message += "Body: " + body;
 
-    return confirm(message);
-}
+
+<script>
+    // Confirm Delete Pop up script
+    function confirmDelete(timestamp, van, body, entryId) {
+        var message = "Are you sure you want to delete the following entry?\n\n";
+        message += "Timestamp: " + timestamp + "\n";
+        message += "Van Number: " + van + "\n";
+        message += "Body: " + body;
+
+        // Prompt user for confirmation
+        if (confirm(message)) {
+            deleteEntry(entryId); // Delete the entry if confirmed
+        }
+    }
+
+    // Function to delete the entry via AJAX request
+    function deleteEntry(entryId) {
+        fetch("/inbox/delete-entry", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ entryId: entryId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the entry from the UI
+                const entryElement = document.getElementById(`entry-${entryId}`);
+                entryElement.parentNode.removeChild(entryElement);
+                // Show a confirmation modal
+                // You can implement your modal here
+                alert("Entry deleted successfully!");
+            } else {
+                // Handle error (if any)
+                console.error('Failed to delete entry');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
 </script>
 
 {% endblock %}
