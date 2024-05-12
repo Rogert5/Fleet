@@ -48,7 +48,7 @@
             <!--Edit Button-->
             <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
             <!--DELETE Form-->
-            <form class="delete-form">
+            <form class="delete-entry">
                 <input type="hidden" name="entryId" value="{{ entry.id }}">
                 <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}');">Delete</button>
             </form>

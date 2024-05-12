@@ -85,7 +85,7 @@ with app.app_context():
     db.create_all()
 
 # Delete entry from inbox
-@app.route("/inbox/delete-entry", methods=["POST"])
+@app.route("/delete-form", methods=["POST"])
 def delete_entry():
     entry_id = request.json.get("entryId")  # Use request.json to access JSON data
     if entry_id:
