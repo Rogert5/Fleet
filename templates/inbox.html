@@ -87,7 +87,7 @@
                 Entry has been successfully deleted.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="confirm-delete">Ok</button>
+                <button type="button" class="btn btn-primary" id="confirm">Close</button>
             </div>
         </div>
     </div>
@@ -104,10 +104,10 @@
 <!--EDIT BUTTON SCRIPT-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // When the Edit button is clicked, show the modal and populate the textarea
-        document.querySelectorAll('.edit-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const entryId = this.getAttribute('data-entry-id');
+        // Event delegation for handling edit button clicks
+        document.addEventListener('click', function(event) {
+            if (event.target && event.target.classList.contains('edit-btn')) {
+                const entryId = event.target.getAttribute('data-entry-id');
                 const currentContent = document.querySelector(`#entry-${entryId} .entry-body p`).textContent;
 
                 document.getElementById('edit-textarea').value = currentContent;
@@ -115,7 +115,7 @@
                 const editModal = new bootstrap.Modal(document.getElementById('editModal'));
                 editModal.show();
 
-                // When the Submit button in the modal is clicked, send the updated content to the server
+                // Event delegation for handling submit button click inside the edit modal
                 document.getElementById('submit-edit').addEventListener('click', function() {
                     const updatedContent = document.getElementById('edit-textarea').value;
 
@@ -127,7 +127,6 @@
                         body: JSON.stringify({ body: updatedContent })
                     })
                     .then(response => response.json())
-                    //update to current "date" upon edit
                     .then(data => {
                         if (data.status === "success") {
                             // Update the content on the page and close the modal
@@ -138,7 +137,7 @@
                         }
                     });
                 });
-            });
+            }
         });
     });
 </script>
@@ -189,9 +188,6 @@
                 console.error('Failed to delete entry');
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-        });
     }
 </script>
 
