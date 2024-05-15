@@ -9,6 +9,8 @@ from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
 
+#SECOND BRANCH AGAIN
+
 # Configure application
 app = Flask(__name__)
 
@@ -82,19 +84,19 @@ def convert_utc_to_cst(utc_time):
 with app.app_context():
     db.create_all()
 
-#Delete entry from inbox
 @app.route("/inbox/delete-entry", methods=["POST"])
 def delete_entry():
-    page = request.form.get("page")
-    entry_id = request.form.get("entryId")
+    entry_id = request.json.get("entryId")
     if entry_id:
         entry = Entry.query.get(entry_id)
         if entry:
             db.session.delete(entry)
             db.session.commit()
-
-    flash("Entry Deleted",)
-    return redirect("/inbox")
+            return jsonify({'status': 'success'}), 200
+        else:
+            return jsonify({'status': 'error', 'message': 'Entry not found'}), 404
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
 
 # home page route
 @app.route("/")

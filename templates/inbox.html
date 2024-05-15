@@ -36,33 +36,23 @@
     </form>
 
     {% for entry in entries %}
-        <div class="entry list-group-item" id="entry-{{ entry.id }}">
+    <div class="entry list-group-item" id="entry-{{ entry.id }}">
         <div class="entry-meta">
             <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
             <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
         </div>
-
-            <div class="entry-body">
-                <p>{{ entry.body }}</p>
-            </div>
-            
-
-
-                <div class="buttons">         
-                    <!--Edit Button-->
-                    <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
-
-                    <!--DELETE Form-->
-                    <form action="/inbox/delete-entry" method="post">
-                        <input type="hidden" name="page" value="inbox">
-                        <input type="hidden" name="entryId" value="{{ entry.id }}">
-                        <button type="submit" class="btn btn-danger" onclick="return confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}');">Delete</button>
-                    </form>
-                </div>
-            
+        <div class="entry-body">
+            <p>{{ entry.body }}</p>
         </div>
-        
+        <div class="buttons">         
+            <!--Edit Button-->
+            <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
+            <!--DELETE Button with confirmDelete function call-->
+            <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}', '{{ entry.id }}')">Delete</button>
+        </div>
+    </div>
     {% endfor %}
+    
     
             <!-- Edit Modal -->
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -83,6 +73,28 @@
             </div>
         </div>
     
+<!-- Delete confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Entry Deleted</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Entry has been successfully deleted.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="confirm">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+  
+
 </div>
 
 
@@ -92,10 +104,10 @@
 <!--EDIT BUTTON SCRIPT-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // When the Edit button is clicked, show the modal and populate the textarea
-        document.querySelectorAll('.edit-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const entryId = this.getAttribute('data-entry-id');
+        // Event delegation for handling edit button clicks
+        document.addEventListener('click', function(event) {
+            if (event.target && event.target.classList.contains('edit-btn')) {
+                const entryId = event.target.getAttribute('data-entry-id');
                 const currentContent = document.querySelector(`#entry-${entryId} .entry-body p`).textContent;
 
                 document.getElementById('edit-textarea').value = currentContent;
@@ -103,7 +115,7 @@
                 const editModal = new bootstrap.Modal(document.getElementById('editModal'));
                 editModal.show();
 
-                // When the Submit button in the modal is clicked, send the updated content to the server
+                // Event delegation for handling submit button click inside the edit modal
                 document.getElementById('submit-edit').addEventListener('click', function() {
                     const updatedContent = document.getElementById('edit-textarea').value;
 
@@ -115,7 +127,6 @@
                         body: JSON.stringify({ body: updatedContent })
                     })
                     .then(response => response.json())
-                    //update to current "date" upon edit
                     .then(data => {
                         if (data.status === "success") {
                             // Update the content on the page and close the modal
@@ -126,7 +137,7 @@
                         }
                     });
                 });
-            });
+            }
         });
     });
 </script>
@@ -144,17 +155,42 @@
     });
 </script>
 
-<!-- Confirm Delete Pop up script -->
-<script>
-function confirmDelete(timestamp, van, body) {
-    var message = "Are you sure you want to delete the following entry?\n\n";
-    message += "Timestamp: " + timestamp + "\n";
-    message += "Van Number: " + van + "\n";
-    message += "Body: " + body;
 
-    return confirm(message);
-}
+
+<script>
+    function confirmDelete(timestamp, van, body, entryId) {
+        var message = "Are you sure you want to delete the following entry?\n\n";
+        message += "Timestamp: " + timestamp + "\n";
+        message += "Van Number: " + van + "\n";
+        message += "Body: " + body;
+
+        if (confirm(message)) {
+            deleteEntry(entryId); // Initiate AJAX request to delete the entry
+        }
+    }
+
+    function deleteEntry(entryId) {
+        fetch("/inbox/delete-entry", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ entryId: entryId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the entry from the UI
+                const entryElement = document.getElementById(`entry-${entryId}`);
+                entryElement.parentNode.removeChild(entryElement);
+                alert("Entry deleted successfully!");
+            } else {
+                console.error('Failed to delete entry');
+            }
+        })
+    }
 </script>
+
 
 {% endblock %}
 
