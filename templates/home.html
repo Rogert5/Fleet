@@ -10,6 +10,31 @@
   </div>
 </head>
 
+<div class="container">
+      <h1>Notes</h1>
+      <div id="content">
+          <form action="/" method="post">
+              <textarea cols="40"rows="1" maxlength="200" name="body" placeholder="200 character limit"></textarea>
+              <input type="submit" value="Add Note">
+          </form>
+      </div>
+
+      <!--Display Note Posted on Supervisor wall along with a delete button-->
+      {% for note in notes %}
+      <div class="bg-warning list-group-item">
+          <input type="hidden" name="noteId" value="{{ note.id }}">
+          <h6>{{ note.sender }}</h6>
+          <h6>{{ note.body }}</h6>
+
+      <form action="/home/delete-note" method="post">
+          <input type="hidden" name="note" value="delete">
+          <input type="hidden" name="noteId" value="{{ note.id }}">
+          <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+      </div>
+      {% endfor %}
+
+</div>
 {% endblock %}
 
 

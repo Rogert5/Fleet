@@ -37,7 +37,7 @@ def after_request(response):
 #postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd
 #{sgmm+VzG7VE@127.0.0.1:3306/fleet_db (GODADDY CODE)
 #mysql+pymysql://mydb_root_user@localhost/fleet_db (LOCAL CODE)
-app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
+app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://mydb_root_user@localhost/fleet_db'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Create database object
@@ -98,9 +98,21 @@ def delete_entry():
         return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
 
 # home page route
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template("home.html")
+        if request.method == "POST":
+            # Get the note body from the form data
+            note_body = request.form.get("body")
+
+            # Insert the note into the database
+            note = Note(body=note_body)
+            db.session.add(note)
+            db.session.commit()
+
+        # Retrieve notes from the database
+        notes = Note.query.all()
+
+        return render_template("home.html", notes=notes)
 
 #compose route for entry in Inbox.html
 @app.route("/compose", methods=["GET", "POST"])
@@ -141,20 +153,8 @@ def grid():
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
 
-    if request.method == "POST":
-        # Get the note body from the form data
-        note_body = request.form.get("body")
-
-        # Insert the note into the database
-        note = Note(body=note_body)
-        db.session.add(note)
-        db.session.commit()
-
-    # Retrieve notes from the database
-    notes = Note.query.all()
-
     # Pass notes to the template
-    return render_template("admin.html", notes=notes)
+    return render_template("admin.html")
     
 
     
@@ -213,7 +213,7 @@ def update_entry(entry_id):
 
 
 # Delete note from the databasegit a
-@app.route("/admin/delete-note", methods=["POST"])
+@app.route("/home/delete-note", methods=["POST"])
 def delete_note():
     note_id = request.form.get("noteId")
     if note_id:
@@ -222,7 +222,7 @@ def delete_note():
             db.session.delete(note)
             db.session.commit()
     flash("Note deleted successfully")
-    return redirect("/admin")
+    return redirect("/")
 
 
 if __name__ == "__main__":
