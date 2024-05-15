@@ -99,9 +99,21 @@ def delete_entry():
         return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
 
 # home page route
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template("home.html")
+        if request.method == "POST":
+            # Get the note body from the form data
+            note_body = request.form.get("body")
+
+            # Insert the note into the database
+            note = Note(body=note_body)
+            db.session.add(note)
+            db.session.commit()
+
+        # Retrieve notes from the database
+        notes = Note.query.all()
+
+        return render_template("home.html", notes=notes)
 
 #compose route for entry in Inbox.html
 @app.route("/compose", methods=["GET", "POST"])
@@ -142,20 +154,8 @@ def grid():
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
 
-    if request.method == "POST":
-        # Get the note body from the form data
-        note_body = request.form.get("body")
-
-        # Insert the note into the database
-        note = Note(body=note_body)
-        db.session.add(note)
-        db.session.commit()
-
-    # Retrieve notes from the database
-    notes = Note.query.all()
-
     # Pass notes to the template
-    return render_template("admin.html", notes=notes)
+    return render_template("admin.html")
     
 
     
@@ -214,7 +214,7 @@ def update_entry(entry_id):
 
 
 # Delete note from the databasegit a
-@app.route("/admin/delete-note", methods=["POST"])
+@app.route("/home/delete-note", methods=["POST"])
 def delete_note():
     note_id = request.form.get("noteId")
     if note_id:
@@ -223,7 +223,7 @@ def delete_note():
             db.session.delete(note)
             db.session.commit()
     flash("Note deleted successfully")
-    return redirect("/admin")
+    return redirect("/")
 
 
 if __name__ == "__main__":

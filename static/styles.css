@@ -92,8 +92,11 @@ footer{
 
 
 #container-admin{
-    background-color:gold;
-    width:1200px;
+    background-color: gold;
+    max-width: 80%;
+    padding: 20px;
+    margin: 0 auto;
+    box-sizing: border-box;
     margin-left: auto;
     margin-right: auto;
 }
