@@ -46,15 +46,18 @@
         </div>
         <div class="buttons">         
             <!--Edit Button-->
+            <!--
             <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
+            -->
             <!--DELETE Button with confirmDelete function call-->
             <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}', '{{ entry.id }}')">Delete</button>
         </div>
     </div>
     {% endfor %}
     
-    
+
             <!-- Edit Modal -->
+<!--
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -72,7 +75,8 @@
                 </div>
             </div>
         </div>
-    
+-->
+
 <!-- Delete confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -102,6 +106,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!--EDIT BUTTON SCRIPT-->
+<!--
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Event delegation for handling edit button clicks
@@ -141,7 +146,7 @@
         });
     });
 </script>
-
+-->
 
 
 <!-- Order by - option for listed entries (date or van) -->
