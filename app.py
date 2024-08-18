@@ -180,36 +180,6 @@ def inbox():
     return render_template("inbox.html", entries=entry_list, order_by=order_by)
 
 
-# Edit button from inbox page for editing entries
-@app.route("/update_entry/<int:entry_id>", methods=["POST"])
-def update_entry(entry_id):
-    # Retrieve the updated content from the request body
-    data = request.get_json()
-    new_body = data.get("body")
-
-    # Fetch the specific entry from the database
-    entry = Entry.query.get(entry_id)
-
-    # If the entry is not found, return an error response
-    if not entry:
-        return jsonify({"status": "error", "message": "Entry not found."}), 404
-
-    # Update the entry's body
-    entry.body = new_body
-    
-    # Get the current UTC time
-    utc_now = datetime.utcnow()
-    # Convert UTC time to CST
-    cst_time = convert_utc_to_cst(utc_now)
-    # Update the entry's timestamp to CST time
-    entry.timestamp = cst_time
-
-    # Commit the changes to the database
-    db.session.commit()
-    
-    return jsonify({"status": "success", "message": "Entry updated successfully."})
-
-
 
 
 # Delete note from the databasegit a

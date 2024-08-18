@@ -44,39 +44,13 @@
         <div class="entry-body">
             <p>{{ entry.body }}</p>
         </div>
-        <div class="buttons">         
-            <!--Edit Button-->
-            <!--
-            <button type="button" class="btn btn-primary edit-btn" data-entry-id="{{ entry.id }}">Edit</button>
-            -->
-            <!--DELETE Button with confirmDelete function call-->
-            <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}', '{{ entry.id }}')">Delete</button>
-        </div>
+            <div class="buttons">         
+                <!--DELETE Button with confirmDelete function call-->
+                <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}', '{{ entry.id }}')">Delete</button>
+            </div>
     </div>
     {% endfor %}
     
-
-            <!-- Edit Modal -->
-<!--
-        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <textarea id="edit-textarea" class="form-control" rows="5"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="submit-edit">Submit Changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
--->
-
 <!-- Delete confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -102,51 +76,7 @@
 </div>
 
 
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!--EDIT BUTTON SCRIPT-->
-<!--
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Event delegation for handling edit button clicks
-        document.addEventListener('click', function(event) {
-            if (event.target && event.target.classList.contains('edit-btn')) {
-                const entryId = event.target.getAttribute('data-entry-id');
-                const currentContent = document.querySelector(`#entry-${entryId} .entry-body p`).textContent;
-
-                document.getElementById('edit-textarea').value = currentContent;
-                // Use Bootstrap's Modal functionality to show the modal
-                const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-                editModal.show();
-
-                // Event delegation for handling submit button click inside the edit modal
-                document.getElementById('submit-edit').addEventListener('click', function() {
-                    const updatedContent = document.getElementById('edit-textarea').value;
-
-                    fetch(`/update_entry/${entryId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ body: updatedContent })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === "success") {
-                            // Update the content on the page and close the modal
-                            document.querySelector(`#entry-${entryId} .entry-body p`).textContent = updatedContent;
-                            // Update the timestamp on the page
-                            document.querySelector(`#entry-${entryId} .entry-meta p`).textContent = 'Just now'; // Or format accordingly
-                            editModal.hide();
-                        }
-                    });
-                });
-            }
-        });
-    });
-</script>
--->
 
 
 <!-- Order by - option for listed entries (date or van) -->
@@ -159,7 +89,6 @@
         form.submit();
     });
 </script>
-
 
 
 <script>
