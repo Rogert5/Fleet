@@ -92,37 +92,45 @@
 
 
 <script>
-    function confirmDelete(timestamp, van, body, entryId) {
-        var message = "Are you sure you want to delete the following entry?\n\n";
-        message += "Timestamp: " + timestamp + "\n";
-        message += "Van Number: " + van + "\n";
-        message += "Body: " + body;
+function confirmDelete(timestamp, van, body, entryId) {
+    console.log('Confirm delete called with:', entryId); // Debugging log
+    var message = "Are you sure you want to delete the following entry?\n\n";
+    message += "Timestamp: " + timestamp + "\n";
+    message += "Van Number: " + van + "\n";
+    message += "Body: " + body;
 
-        if (confirm(message)) {
-            deleteEntry(entryId); // Initiate AJAX request to delete the entry
-        }
+    if (confirm(message)) {
+        deleteEntry(entryId); // Initiate AJAX request to delete the entry
     }
+}
 
-    function deleteEntry(entryId) {
-        fetch("/inbox/delete-entry", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ entryId: entryId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Remove the entry from the UI
-                const entryElement = document.getElementById(`entry-${entryId}`);
+function deleteEntry(entryId) {
+    console.log('Deleting entry:', entryId); // Debugging log
+    fetch("/inbox/delete-entry", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ entryId: entryId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Delete response:', data); // Debugging log
+        if (data.status === 'success') {
+            // Remove the entry from the UI
+            const entryElement = document.getElementById(`entry-${entryId}`);
+            if (entryElement) {
                 entryElement.parentNode.removeChild(entryElement);
                 alert("Entry deleted successfully!");
             } else {
-                console.error('Failed to delete entry');
+                console.error('Entry element not found:', entryId);
             }
-        })
-    }
+        } else {
+            console.error('Failed to delete entry');
+        }
+    })
+    .catch(error => console.error('Error deleting entry:', error));
+}
 </script>
 
 
