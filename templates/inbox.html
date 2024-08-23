@@ -42,11 +42,11 @@
                 <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
             </div>
             <div class="entry-body">
-                <p>{{ entry.body }}</p>
+                <p>{{ entry.body | e }}</p>
             </div>
                 <div class="buttons">         
                     <!--DELETE Button with confirmDelete function call-->
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d')|e }}', '{{ entry.van|e }}', '{{ entry.body|e }}', '{{ entry.id|e }}')">Delete</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') | e }}', '{{ entry.van | e }}', '{{ entry.body | e }}', '{{ entry.id | e }}')">Delete</button>
                 </div>
         </div>
         {% endfor %}
@@ -80,7 +80,7 @@
         var form = document.getElementById('order-form');
         var orderSelect = document.getElementById('order-by-select');
         var selectedOrder = orderSelect.options[orderSelect.selectedIndex].value;
-        form.action = '/inbox?order_by=' + selectedOrder;
+        form.action = '/inbox?order_by=' + encodeURIComponent(selectedOrder);
         form.submit();
     });
 </script>
