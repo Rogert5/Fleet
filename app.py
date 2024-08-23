@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 from datetime import datetime, timedelta
 import os
 
->>>>>>> parent of 9c5f80f (Python reorganizaton)
 from urllib.parse import urlparse
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
@@ -12,15 +9,10 @@ from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
 
-<<<<<<< HEAD
 # -----------------------------
 # Application Configuration
 # -----------------------------
 
-=======
-
-# Configure application
->>>>>>> parent of 9c5f80f (Python reorganizaton)
 app = Flask(__name__)
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -53,7 +45,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Create database object
 db = SQLAlchemy(app)
 
-<<<<<<< HEAD
 # -----------------------------
 # Helper Functions
 # -----------------------------
@@ -67,10 +58,8 @@ def convert_utc_to_cst(utc_time):
 # Model Definitions
 # -----------------------------
 
-=======
 
 # Define the Entry model used for inbox
->>>>>>> parent of 9c5f80f (Python reorganizaton)
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(), nullable=False)
