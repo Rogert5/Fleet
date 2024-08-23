@@ -83,6 +83,7 @@
     });
 </script>
 
+<<<<<<< HEAD
 <script>
     function escapeHtml(text) {
         var map = {
@@ -95,12 +96,16 @@
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
+=======
+
+<script>
+>>>>>>> parent of 50b3e72 (Delete functions updated for avoiding ' prblem)
     function confirmDelete(timestamp, van, body, entryId) {
-        var escapedBody = escapeHtml(body);
+        console.log('Confirm delete called with:', entryId); // Debugging log
         var message = "Are you sure you want to delete the following entry?\n\n";
         message += "Timestamp: " + timestamp + "\n";
         message += "Van Number: " + van + "\n";
-        message += "Body: " + escapedBody;
+        message += "Body: " + body;
 
         if (confirm(message)) {
             deleteEntry(entryId); // Initiate AJAX request to delete the entry
