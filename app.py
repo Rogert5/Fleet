@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
-from flask import Flask, flash, redirect, render_template, request, session, jsonify, escape
+from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import psycopg2
