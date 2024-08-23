@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 import os
 
-from urllib.parse import urlparse
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
@@ -10,7 +9,10 @@ from helpers import apology
 from collections import defaultdict
 
 
-# Configure application
+# -----------------------------
+# Application Configuration
+# -----------------------------
+
 app = Flask(__name__)
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -21,22 +23,7 @@ Session(app)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
-@app.after_request
-def after_request(response):
-    """Ensure responses aren't cached"""
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Expires"] = 0
-    response.headers["Pragma"] = "no-cache"
-    return response
-
-#uri = os.getenv("DATABASE_URL")  # or other relevant config var
-#if uri.startswith("postgres://"):
-#    uri = uri.replace("postgres://", "postgresql://", 1)
-
 # Configure database
-#postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd
-#{sgmm+VzG7VE@127.0.0.1:3306/fleet_db (GODADDY CODE)
-#mysql+pymysql://mydb_root_user@localhost/fleet_db (LOCAL CODE)
 app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://u2uao60uo5rh2g:p67321ffebd10efb688c69c9231e5a4839c03d0e305f2d0a231391dc037f714eb@cb6h87c9erodfl.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/damd6vshgk9tdd'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -44,47 +31,74 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# Define the Entry model used for inbox
+# -----------------------------
+# Helper Functions
+# -----------------------------
+
+def convert_utc_to_cst(utc_time):
+    """Convert UTC time to CST (UTC-6 hours)"""
+    cst_offset = timedelta(hours=-6)
+    return utc_time + cst_offset
+
+# -----------------------------
+# Model Definitions
+# -----------------------------
+
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(), nullable=False)
     body = db.Column(db.String(), nullable=False)
-    
-    # Define a function to get the default timestamp value in CST
-    @staticmethod
-    def default_cst_timestamp():
-        # Get the current UTC time
-        utc_now = datetime.utcnow()
-        # Convert UTC time to CST
-        cst_time = convert_utc_to_cst(utc_now)
-        return cst_time
+    timestamp = db.Column(db.DateTime, nullable=False, default=lambda: convert_utc_to_cst(datetime.utcnow()))
 
-    # Define the timestamp column with the default value as CST time
-    timestamp = db.Column(db.DateTime, nullable=False, default=default_cst_timestamp)
-
-
-
-#Defines Note used in Admin page to send post it notes between management
 class Note(db.Model):
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-# Define a function to convert UTC to CST
-def convert_utc_to_cst(utc_time):
-    # Calculate the time difference between UTC and CST (UTC-6 hours)
-    cst_offset = timedelta(hours=-6)
-    # Add the offset to the UTC time
-    cst_time = utc_time + cst_offset
-    return cst_time
-
 # Create tables
 with app.app_context():
     db.create_all()
 
+# -----------------------------
+# Route Handlers
+# -----------------------------
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    """Home page route"""
+    if request.method == "POST":
+        note_body = request.form.get("body")
+        note = Note(body=note_body)
+        db.session.add(note)
+        db.session.commit()
+        flash("Note added successfully")
+
+    notes = Note.query.all()
+    return render_template("home.html", notes=notes)
+
+@app.route("/compose", methods=["GET", "POST"])
+def compose():
+    """Compose page route for adding new entries"""
+    if request.method == "POST":
+        van = request.form.get("van")
+        body = request.form.get("body")
+
+        if not van.isdigit() or not ((1 <= int(van) <= 23) or (52 <= int(van) <= 58)):
+            return render_template("apology.html", top="Error", bottom="Sorry, only numbers between 1-23 and 52-58 are allowed. DO NOT ADD LETTER G")
+
+        entry = Entry(van=van, body=body)
+        db.session.add(entry)
+        db.session.commit()
+
+        flash("Entry Successful")
+        return redirect("/inbox")
+
+    return render_template("inbox.html")
+
 @app.route("/inbox/delete-entry", methods=["POST"])
 def delete_entry():
+    """Delete an entry from the inbox"""
     entry_id = request.json.get("entryId")
     if entry_id:
         entry = Entry.query.get(entry_id)
@@ -94,106 +108,63 @@ def delete_entry():
             return jsonify({'status': 'success'}), 200
         else:
             return jsonify({'status': 'error', 'message': 'Entry not found'}), 404
-    else:
-        return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
+    return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
 
-# home page route
-@app.route("/", methods=["GET", "POST"])
-def home():
-        if request.method == "POST":
-            # Get the note body from the form data
-            note_body = request.form.get("body")
-
-            # Insert the note into the database
-            note = Note(body=note_body)
-            db.session.add(note)
-            db.session.commit()
-
-        # Retrieve notes from the database
-        notes = Note.query.all()
-
-        return render_template("home.html", notes=notes)
-
-#compose route for entry in Inbox.html
-@app.route("/compose", methods=["GET", "POST"])
-def compose():
-    if request.method == "POST":
-        van = request.form.get("van")
-        body = request.form.get("body")
-
-        # Get the current UTC time
-        utc_now = datetime.utcnow()
-        # Convert UTC time to CST
-        cst_time = convert_utc_to_cst(utc_now)
-
-        if not van.isdigit() or not ((1 <= int(van) <= 23) or (52 <= int(van) <= 58)):
-            apology_message = "Sorry, only numbers between 1-23 and 52-58 are allowed. DO NOT ADD LETTER G"
-            return render_template("apology.html", top="Error", bottom=apology_message)
-
-
-        entry = Entry(van=van, body=body, timestamp=cst_time)  # Include timestamp parameter
-        db.session.add(entry)
-        db.session.commit()
-
-        flash("Entry Successful")
-        return redirect("inbox")
-
-    return render_template("inbox.html")
-
-# Add a new route for the grid page
-@app.route("/grid")
-def grid():
-    # Fetch entries from the database
-    entries = Entry.query.all()
-    return render_template("grid.html", entries=entries)
-
-
-
-#admin user page makes it have the ability to post a note in notes through the POST method
-@app.route("/admin", methods=["GET", "POST"])
-def admin():
-
-    # Pass notes to the template
-    return render_template("admin.html")
-    
-
-    
-# Rearrange inbox entries by date (descending) and van (ascending)
 @app.route("/inbox", methods=["GET", "POST"])
 def inbox():
-    order_by = request.args.get("order_by", "timestamp")  # Default to ordering by timestamp
+    """Inbox page route with optional ordering"""
+    order_by = request.args.get("order_by", "timestamp")
     if order_by not in ["timestamp", "van"]:
-        order_by = "timestamp"  # Default to timestamp if invalid order_by value(incase of errors)
+        order_by = "timestamp"
 
     if order_by == "timestamp":
-        entries = Entry.query.order_by(Entry.timestamp.desc())  # Order by date (descending)
-        entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
-
-        
-        # Sort the entry list by date in descending order
-        entry_list.sort(key=lambda x: x['timestamp'], reverse=True)
+        entries = Entry.query.order_by(Entry.timestamp.desc())
     elif order_by == "van":
-        entries = Entry.query.order_by(Entry.van.cast(db.Integer).asc())  # Order by van (ascending) as integers
-        entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
-        entry_list.sort(key=lambda x: (x['van'], x['timestamp']))  # Sort by van and then timestamp
+        entries = Entry.query.order_by(Entry.van.cast(db.Integer).asc())
+
+    entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
+    entry_list.sort(key=lambda x: (x['van'], x['timestamp'])) if order_by == "van" else entry_list.sort(key=lambda x: x['timestamp'], reverse=True)
 
     return render_template("inbox.html", entries=entry_list, order_by=order_by)
 
+@app.route("/grid")
+def grid():
+    """Grid page route"""
+    entries = Entry.query.all()
+    return render_template("grid.html", entries=entries)
 
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    """Admin page route"""
+    return render_template("admin.html")
 
-
-# Delete note from the databasegit a
 @app.route("/home/delete-note", methods=["POST"])
 def delete_note():
+    """Delete a note from the home page"""
     note_id = request.form.get("noteId")
     if note_id:
         note = Note.query.get(note_id)
         if note:
             db.session.delete(note)
             db.session.commit()
-    flash("Note deleted successfully")
+            flash("Note deleted successfully")
     return redirect("/")
 
+# -----------------------------
+# Utility Functions
+# -----------------------------
+
+@app.after_request
+def after_request(response):
+    """Ensure responses aren't cached"""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+# -----------------------------
+# Main Execution
+# -----------------------------
 
 if __name__ == "__main__":
     app.run(debug=True)
