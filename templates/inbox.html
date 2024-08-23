@@ -5,16 +5,16 @@
 {% endblock %}
 {% block main %}
 
-<!--Compose messege were recipient is automatically assigned to send to main username account (abb)-->
+<!-- Compose message where recipient is automatically assigned to send to main username account (abb) -->
 <div class="container">
     <form action="/compose" method="post">
-        <!--div makes van input only 2 digits that are intigers only-->
+        <!-- div makes van input only 2 digits that are integers only -->
         <div class="mb-3">
-        <h4>Van Number</h4>
+            <h4>Van Number</h4>
             <input maxlength="2" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(numbers only)">
         </div>
         <h3>Maintenance</h3>
-<!-- "character only 200 length maximum per entry" -->
+        <!-- "character only 200 length maximum per entry" -->
         <div class="mb-3">
             <textarea cols="50" rows="5" maxlength="200" name="body" placeholder="200 character limit"></textarea>
         </div>
@@ -24,33 +24,33 @@
 
 <div id="container-sent">
     <h1>List</h1>
-        <form id="order-form">
-            <div class="mb-3">
-                <label for="order-by-select">Order by:</label>
-                <select name="order_by" id="order-by-select">
-                    <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
-                    <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
-                </select>
-                <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
-            </div>
-        </form>
-
-        {% for entry in entries %}
-        <div class="entry list-group-item" id="entry-{{ entry.id }}">
-            <div class="entry-meta">
-                <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
-                <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
-            </div>
-            <div class="entry-body">
-                <p>{{ entry.body | e }}</p>
-            </div>
-                <div class="buttons">         
-                    <!--DELETE Button with confirmDelete function call-->
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') | e }}', '{{ entry.van | e }}', '{{ entry.body | e }}', '{{ entry.id | e }}')">Delete</button>
-                </div>
+    <form id="order-form">
+        <div class="mb-3">
+            <label for="order-by-select">Order by:</label>
+            <select name="order_by" id="order-by-select">
+                <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
+                <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
+            </select>
+            <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
         </div>
-        {% endfor %}
-        
+    </form>
+
+    {% for entry in entries %}
+    <div class="entry list-group-item" id="entry-{{ entry.id }}">
+        <div class="entry-meta">
+            <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
+            <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
+        </div>
+        <div class="entry-body">
+            <p>{{ entry.body | e }}</p>
+        </div>
+        <div class="buttons">
+            <!-- DELETE Button with confirmDelete function call -->
+            <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') | e }}', '{{ entry.van | e }}', '{{ entry.body | e }}', '{{ entry.id | e }}')">Delete</button>
+        </div>
+    </div>
+    {% endfor %}
+    
     <!-- Delete confirmation Modal -->
     <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -67,12 +67,10 @@
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
 </div>
 
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 
 <!-- Order by - option for listed entries (date or van) -->
 <script>
@@ -97,9 +95,6 @@
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
-</script>
-
-<script>
     function confirmDelete(timestamp, van, body, entryId) {
         var escapedBody = escapeHtml(body);
         var message = "Are you sure you want to delete the following entry?\n\n";
@@ -113,7 +108,6 @@
     }
 
     function deleteEntry(entryId) {
-        console.log('Deleting entry:', entryId); // Debugging log
         fetch("/inbox/delete-entry", {
             method: 'POST',
             headers: {
@@ -123,7 +117,6 @@
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Delete response:', data); // Debugging log
             if (data.status === 'success') {
                 // Remove the entry from the UI
                 const entryElement = document.getElementById(`entry-${entryId}`);
@@ -141,6 +134,4 @@
     }
 </script>
 
-
 {% endblock %}
-

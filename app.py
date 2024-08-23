@@ -1,13 +1,7 @@
 from datetime import datetime, timedelta
-import os
-
-from flask import Flask, flash, redirect, render_template, request, session, jsonify
+from flask import Flask, flash, redirect, render_template, request, jsonify
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import psycopg2
-from helpers import apology
-from collections import defaultdict
-
 
 # -----------------------------
 # Application Configuration
@@ -29,7 +23,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Create database object
 db = SQLAlchemy(app)
-
 
 # -----------------------------
 # Helper Functions
@@ -54,7 +47,7 @@ class Note(db.Model):
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(200), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
 
 # Create tables
 with app.app_context():
