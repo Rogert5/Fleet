@@ -85,14 +85,27 @@
     });
 </script>
 
+<script>
+    function escapeHtml(text) {
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+</script>
 
 <script>
     function confirmDelete(timestamp, van, body, entryId) {
-        console.log('Confirm delete called with:', entryId); // Debugging log
+        var escapedBody = escapeHtml(body);
         var message = "Are you sure you want to delete the following entry?\n\n";
         message += "Timestamp: " + timestamp + "\n";
         message += "Van Number: " + van + "\n";
-        message += "Body: " + body;
+        message += "Body: " + escapedBody;
 
         if (confirm(message)) {
             deleteEntry(entryId); // Initiate AJAX request to delete the entry
