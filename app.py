@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
 from jinja2 import evalcontextfilter, Markup, escape
+import json
 
 # -----------------------------
 # Application Configuration
@@ -51,6 +52,16 @@ db = SQLAlchemy(app)
 # Model Definitions
 # -----------------------------
 
+# Custom filter to escape JavaScript characters
+@app.template_filter()
+@evalcontextfilter
+def js_escape(eval_ctx, value):
+    # JSON dumps automatically escapes characters that are problematic in JavaScript
+    escaped_value = json.dumps(value)
+    if eval_ctx.autoescape:
+        return Markup(escaped_value)
+    return escaped_value
+
 
 # Define the Entry model used for inbox
 class Entry(db.Model):
@@ -71,14 +82,6 @@ class Entry(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=default_cst_timestamp)
 
 
-    @app.template_filter()
-    @evalcontextfilter
-    def js_escape(eval_ctx, value):
-        """Escapes a string for safe use in JavaScript."""
-        escaped = escape(value).replace("'", "\\'").replace('"', '\\"')
-        if eval_ctx.autoescape:
-            escaped = Markup(escaped)
-        return escaped
 
 #Defines Note used in Admin page to send post it notes between management
 class Note(db.Model):
