@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
+from jinja2 import evalcontextfilter, Markup, escape
 
 # -----------------------------
 # Application Configuration
@@ -45,14 +46,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Create database object
 db = SQLAlchemy(app)
 
-# -----------------------------
-# Helper Functions
-# -----------------------------
-
-def convert_utc_to_cst(utc_time):
-    """Convert UTC time to CST (UTC-6 hours)"""
-    cst_offset = timedelta(hours=-6)
-    return utc_time + cst_offset
 
 # -----------------------------
 # Model Definitions
@@ -78,6 +71,14 @@ class Entry(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=default_cst_timestamp)
 
 
+    @app.template_filter()
+    @evalcontextfilter
+    def js_escape(eval_ctx, value):
+        """Escapes a string for safe use in JavaScript."""
+        escaped = escape(value).replace("'", "\\'").replace('"', '\\"')
+        if eval_ctx.autoescape:
+            escaped = Markup(escaped)
+        return escaped
 
 #Defines Note used in Admin page to send post it notes between management
 class Note(db.Model):
