@@ -46,7 +46,7 @@
         </div>
         <div class="buttons">
             <!-- DELETE Button with confirmDelete function call -->
-            <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') | e }}', '{{ entry.van | e }}', '{{ entry.body | e }}', '{{ entry.id | e }}')">Delete</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete(&quot;{{ entry.timestamp.strftime('%Y-%m-%d') | e }}&quot;, &quot;{{ entry.van | e }}&quot;, &quot;{{ entry.body | e }}&quot;, &quot;{{ entry.id | e }}&quot;)" >Delete</button>
         </div>
     </div>
     {% endfor %}
@@ -83,7 +83,6 @@
     });
 </script>
 
-<<<<<<< HEAD
 <script>
     function escapeHtml(text) {
         var map = {
@@ -96,8 +95,6 @@
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 </script>
-=======
->>>>>>> parent of 50b3e72 (Delete functions updated for avoiding ' prblem)
 
 
 <script>
