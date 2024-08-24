@@ -15,6 +15,8 @@ import json
 # Application Configuration
 # -----------------------------
 
+
+# Configure application
 app = Flask(__name__)
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -47,11 +49,24 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Create database object
 db = SQLAlchemy(app)
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+# -----------------------------
+# Helper Functions
+# -----------------------------
+
+def convert_utc_to_cst(utc_time):
+    """Convert UTC time to CST (UTC-6 hours)"""
+    cst_offset = timedelta(hours=-6)
+    return utc_time + cst_offset
+>>>>>>> parent of 7b21672 (reverts)
 
 # -----------------------------
 # Model Definitions
 # -----------------------------
 
+<<<<<<< HEAD
 # Custom filter to escape JavaScript characters
 @app.template_filter()
 @evalcontextfilter
@@ -62,8 +77,12 @@ def js_escape(eval_ctx, value):
         return Markup(escaped_value)
     return escaped_value
 
+=======
+=======
+>>>>>>> parent of 7b21672 (reverts)
 
 # Define the Entry model used for inbox
+>>>>>>> parent of 9c5f80f (Python reorganizaton)
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(), nullable=False)
