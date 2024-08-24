@@ -46,7 +46,7 @@
             </div>
                 <div class="buttons">         
                     <!--DELETE Button with confirmDelete function call-->
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}', '{{ entry.id }}')">Delete</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete(&quot;{{ entry.timestamp.strftime('%Y-%m-%d') | e }}&quot;, &quot;{{ entry.van | e }}&quot;, &quot;{{ entry.body | e }}&quot;, &quot;{{ entry.id | e }}&quot;)">Delete</button>
                 </div>
         </div>
     </form>
