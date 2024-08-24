@@ -24,14 +24,30 @@
 
 <div id="container-sent">
     <h1>List</h1>
-    <form id="order-form">
-        <div class="mb-3">
-            <label for="order-by-select">Order by:</label>
-            <select name="order_by" id="order-by-select">
-                <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
-                <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
-            </select>
-            <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
+        <form id="order-form">
+            <div class="mb-3">
+                <label for="order-by-select">Order by:</label>
+                <select name="order_by" id="order-by-select">
+                    <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
+                    <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
+                </select>
+                <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
+            </div>
+        </form>
+
+        {% for entry in entries %}
+        <div class="entry list-group-item" id="entry-{{ entry.id }}">
+            <div class="entry-meta">
+                <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
+                <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
+            </div>
+            <div class="entry-body">
+                <p>{{ entry.body }}</p>
+            </div>
+                <div class="buttons">         
+                    <!--DELETE Button with confirmDelete function call-->
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}', '{{ entry.van }}', '{{ entry.body }}', '{{ entry.id }}')">Delete</button>
+                </div>
         </div>
     </form>
 
