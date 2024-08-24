@@ -50,21 +50,6 @@
                 </div>
         </div>
     </form>
-
-    {% for entry in entries %}
-    <div class="entry list-group-item" id="entry-{{ entry.id }}">
-        <div class="entry-meta">
-            <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
-            <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
-        </div>
-        <div class="entry-body">
-            <p>{{ entry.body | e }}</p>
-        </div>
-        <div class="buttons">
-            <!-- DELETE Button with confirmDelete function call -->
-            <button type="button" class="btn btn-danger" onclick="confirmDelete({{ entry.timestamp.strftime('%Y-%m-%d') | js_escape }}, {{ entry.van | js_escape }}, {{ entry.body | js_escape }}, {{ entry.id | js_escape }})">Delete</button>
-        </div>
-    </div>
     {% endfor %}
     
     <!-- Delete confirmation Modal -->
@@ -99,18 +84,6 @@
     });
 </script>
 
-<script>
-    function escapeHtml(text) {
-        var map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
-</script>
 
 
 <script>
