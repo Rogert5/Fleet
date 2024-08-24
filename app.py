@@ -8,7 +8,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
-from jinja2 import escape
 import json
 
 # -----------------------------
@@ -49,9 +48,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Create database object
 db = SQLAlchemy(app)
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
+
 # -----------------------------
 # Helper Functions
 # -----------------------------
@@ -60,29 +57,14 @@ def convert_utc_to_cst(utc_time):
     """Convert UTC time to CST (UTC-6 hours)"""
     cst_offset = timedelta(hours=-6)
     return utc_time + cst_offset
->>>>>>> parent of 7b21672 (reverts)
 
 # -----------------------------
 # Model Definitions
 # -----------------------------
 
-<<<<<<< HEAD
-# Custom filter to escape JavaScript characters
-@app.template_filter()
-@evalcontextfilter
-def js_escape(eval_ctx, value):
-    # JSON dumps automatically escapes characters that are problematic in JavaScript
-    escaped_value = json.dumps(value)
-    if eval_ctx.autoescape:
-        return Markup(escaped_value)
-    return escaped_value
 
-=======
-=======
->>>>>>> parent of 7b21672 (reverts)
 
 # Define the Entry model used for inbox
->>>>>>> parent of 9c5f80f (Python reorganizaton)
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(), nullable=False)
