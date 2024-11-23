@@ -146,8 +146,8 @@ def compose():
         # Convert UTC time to CST
         cst_time = convert_utc_to_cst(utc_now)
 
-        if not van.isdigit() or not ((1 <= int(van) <= 23) or (52 <= int(van) <= 58)):
-            apology_message = "Sorry, only numbers between 1-23 and 52-58 are allowed. DO NOT ADD LETTER G"
+        if not van.isdigit() or not ((1 <= int(van) <= 26) or (52 <= int(van) <= 58)):
+            apology_message = "Sorry, only numbers between 1-26 and 52-58 are allowed. DO NOT ADD LETTER G"
             return render_template("apology.html", top="Error", bottom=apology_message)
 
 
