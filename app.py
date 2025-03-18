@@ -142,17 +142,21 @@ def compose():
         van = request.form.get("van")
         body = request.form.get("body")
 
-        # Get the current UTC time
+        #Clean the body before saving
+        body = body.replace('\r', '').strip()
+
+        #Get the current UTC time
         utc_now = datetime.utcnow()
-        # Convert UTC time to CST
+        #Convert UTC time to CST
         cst_time = convert_utc_to_cst(utc_now)
 
+        #Validate van input
         if not van.isdigit() or not ((1 <= int(van) <= 26) or (52 <= int(van) <= 58)):
             apology_message = "Sorry, only numbers between 1-26 and 52-58 are allowed. DO NOT ADD LETTER G"
             return render_template("apology.html", top="Error", bottom=apology_message)
 
-
-        entry = Entry(van=van, body=body, timestamp=cst_time)  # Include timestamp parameter
+        # Create and save the entry
+        entry = Entry(van=van, body=body, timestamp=cst_time)
         db.session.add(entry)
         db.session.commit()
 
@@ -160,6 +164,7 @@ def compose():
         return redirect("inbox")
 
     return render_template("inbox.html")
+
 
 # Add a new route for the grid page
 @app.route("/grid")
