@@ -8,10 +8,10 @@
 <!-- Compose message where recipient is automatically assigned to send to main username account (abb) -->
 <div class="container">
     <form action="/compose" method="post">
-        <!-- Update to allow both 1-58 and L1-L58 formats -->
+        <!-- div makes van input only 2 digits that are integers only -->
         <div class="mb-3">
             <h4>Van Number</h4>
-            <input maxlength="3" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(1-58 or L1-L58)">
+            <input maxlength="2" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(numbers only)">
         </div>
         <h3>Maintenance</h3>
         <!-- "character only 200 length maximum per entry" -->
@@ -83,6 +83,8 @@
         form.submit();
     });
 </script>
+
+
 
 <script>
     function confirmDelete(timestamp, van, body, entryId) {
