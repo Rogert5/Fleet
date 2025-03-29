@@ -134,29 +134,40 @@ def home():
         notes = Note.query.all()
 
         return render_template("home.html", notes=notes)
+        
 
-#compose route for entry in Inbox.html
+# compose route for entry in Inbox.html
 @app.route("/compose", methods=["GET", "POST"])
 def compose():
     if request.method == "POST":
         van = request.form.get("van")
-        body = request.form.get("body")
+        body = request.form.get("body").replace("\r", "")  # Remove carriage returns
 
-        #Clean the body before saving
-        body = body.replace('\r', '').strip()
-
-        #Get the current UTC time
+        # Get the current UTC time
         utc_now = datetime.utcnow()
-        #Convert UTC time to CST
+        # Convert UTC time to CST
         cst_time = convert_utc_to_cst(utc_now)
 
-        #Validate van input
-        if not van.isdigit() or not ((1 <= int(van) <= 26) or (52 <= int(van) <= 58)):
-            apology_message = "Sorry, only numbers between 1-26 and 52-58 are allowed. DO NOT ADD LETTER G"
+        # Check if van format is valid
+        if van.startswith("L") and van[1:].isdigit():
+            van_num = int(van[1:])
+            if not (1 <= van_num <= 58):
+                apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
+                return render_template("apology.html", top="Error", bottom=apology_message)
+
+        elif van.isdigit():
+            van_num = int(van)
+            if not (1 <= van_num <= 58):
+                apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
+                return render_template("apology.html", top="Error", bottom=apology_message)
+
+        else:
+            # Apology if invalid format is detected
+            apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
             return render_template("apology.html", top="Error", bottom=apology_message)
 
-        # Create and save the entry
-        entry = Entry(van=van, body=body, timestamp=cst_time)
+        # Create and store entry in the database
+        entry = Entry(van=van, body=body, timestamp=cst_time)  # Include timestamp
         db.session.add(entry)
         db.session.commit()
 
@@ -164,6 +175,7 @@ def compose():
         return redirect("inbox")
 
     return render_template("inbox.html")
+
 
 
 # Add a new route for the grid page
