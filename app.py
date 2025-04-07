@@ -11,8 +11,7 @@ from helpers import apology
 from collections import defaultdict
 import json
 
-#SECONDBRANCH
-
+#MASTER BRANCH
 # -----------------------------
 # Application Configuration
 # -----------------------------
