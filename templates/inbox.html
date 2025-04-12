@@ -44,11 +44,13 @@
                 <p>{{ entry.body }}</p>
             </div>
             <div class="buttons">         
-                <button type="button" class="btn btn-danger"
-                    onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}',
-                                            '{{ entry.van }}',
-                                            '{{ entry.body | replace('\\n', ' ') | escape }}',
-                                            '{{ entry.id }}')">Delete</button>
+                <button type="button"
+                    class="btn btn-danger"
+                    data-timestamp="{{ entry.timestamp.strftime('%Y-%m-%d') }}"
+                    data-van="{{ entry.van }}"
+                    data-body="{{ entry.body | escape }}"
+                    data-entry-id="{{ entry.id }}"
+                    onclick="handleDeleteButtonClick(this)">Delete</button>
             </div>
         </div>
     </div>
@@ -118,5 +120,15 @@
         })
         .catch(error => console.error('Error deleting entry:', error));
     }
+
+    function handleDeleteButtonClick(button) {
+        const timestamp = button.getAttribute('data-timestamp');
+        const van = button.getAttribute('data-van');
+        const body = button.getAttribute('data-body').replace(/\\n/g, ' ');
+        const entryId = button.getAttribute('data-entry-id');
+
+        confirmDelete(timestamp, van, body, entryId);
+    }
+
 </script>
 {% endblock %}
