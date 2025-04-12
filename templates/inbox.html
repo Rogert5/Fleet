@@ -3,39 +3,38 @@
 {% block title %}
     Inbox
 {% endblock %}
-{% block main %}
 
-<!-- Compose message where recipient is automatically assigned to send to main username account (abb) -->
+{% block main %}
 <div class="container">
+    <!-- Compose Form -->
     <form action="/compose" method="post">
-        <!-- div makes van input only 2 digits that are integers only -->
         <div class="mb-3">
             <h4>Van Number</h4>
             <input maxlength="2" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(numbers only)">
         </div>
         <h3>Maintenance</h3>
-        <!-- "character only 200 length maximum per entry" -->
         <div class="mb-3">
             <textarea cols="50" rows="5" maxlength="200" name="body" placeholder="200 character limit"></textarea>
         </div>
         <button class="btn btn-primary" type="submit">Send</button>
     </form>
-</div>
 
-<div id="container-sent">
+    <!-- Sort Filter -->
     <h1>List</h1>
-        <form id="order-form">
-            <div class="mb-3">
-                <label for="order-by-select">Order by:</label>
-                <select name="order_by" id="order-by-select">
-                    <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
-                    <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
-                </select>
-                <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
-            </div>
-        </form>
+    <form id="order-form">
+        <div class="mb-3">
+            <label for="order-by-select">Order by:</label>
+            <select name="order_by" id="order-by-select">
+                <option value="timestamp" {% if order_by == "timestamp" %}selected{% endif %}>Date</option>
+                <option value="van" {% if order_by == "van" %}selected{% endif %}>Van Number</option>
+            </select>
+            <button type="button" class="btn btn-primary" id="apply-button">Apply</button>
+        </div>
+    </form>
 
-        {% for entry in entries %}
+    <!-- Entry List -->
+    {% for entry in entries %}
+    <div class="entry-wrapper">
         <div class="entry list-group-item" id="entry-{{ entry.id }}">
             <div class="entry-meta">
                 <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
@@ -44,20 +43,18 @@
             <div class="entry-body">
                 <p>{{ entry.body }}</p>
             </div>
-                <div class="buttons">         
-                    <!--DELETE Button with confirmDelete function call-->
-                    <button type="button" class="btn btn-danger"
-                        onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}',
-                            '{{ entry.van }}',
-                            '{{ entry.body | replace('\n', ' ') | escape }}',
-                            '{{ entry.id }}')">Delete</button>
-
-                </div>
+            <div class="buttons">         
+                <button type="button" class="btn btn-danger"
+                    onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}',
+                                            '{{ entry.van }}',
+                                            '{{ entry.body | replace('\\n', ' ') | escape }}',
+                                            '{{ entry.id }}')">Delete</button>
+            </div>
         </div>
-    </form>
+    </div>
     {% endfor %}
-    
-    <!-- Delete confirmation Modal -->
+
+    <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -76,9 +73,9 @@
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Order by - option for listed entries (date or van) -->
 <script>
     document.getElementById('apply-button').addEventListener('click', function() {
         var form = document.getElementById('order-form');
@@ -87,20 +84,15 @@
         form.action = '/inbox?order_by=' + encodeURIComponent(selectedOrder);
         form.submit();
     });
-</script>
 
-
-
-<script>
     function confirmDelete(timestamp, van, body, entryId) {
-        console.log('Confirm delete called with:', entryId); // Debugging log
-        var message = "Are you sure you want to delete the following entry?\n\n";
-        message += "Timestamp: " + timestamp + "\n";
-        message += "Van Number: " + van + "\n";
+        var message = "Are you sure you want to delete the following entry?\\n\\n";
+        message += "Timestamp: " + timestamp + "\\n";
+        message += "Van Number: " + van + "\\n";
         message += "Body: " + body;
 
         if (confirm(message)) {
-            deleteEntry(entryId); // Initiate AJAX request to delete the entry
+            deleteEntry(entryId);
         }
     }
 
@@ -115,13 +107,10 @@
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Remove the entry from the UI
                 const entryElement = document.getElementById(`entry-${entryId}`);
                 if (entryElement) {
                     entryElement.parentNode.removeChild(entryElement);
                     alert("Entry deleted successfully!");
-                } else {
-                    console.error('Entry element not found:', entryId);
                 }
             } else {
                 console.error('Failed to delete entry');
@@ -130,5 +119,4 @@
         .catch(error => console.error('Error deleting entry:', error));
     }
 </script>
-
 {% endblock %}
