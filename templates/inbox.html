@@ -91,7 +91,7 @@
     var message = "Are you sure you want to delete the following entry?\n\n";
     message += "Timestamp: " + timestamp + "\n";
     message += "Van Number: " + van + "\n";
-    message += "Body: " + body;
+    message += "Entry: " + body;
 
     if (confirm(message)) {
         deleteEntry(entryId);
