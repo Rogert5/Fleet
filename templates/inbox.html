@@ -86,15 +86,15 @@
     });
 
     function confirmDelete(timestamp, van, body, entryId) {
-        var message = "Are you sure you want to delete the following entry?\\n\\n";
-        message += "Timestamp: " + timestamp + "\\n";
-        message += "Van Number: " + van + "\\n";
-        message += "Body: " + body;
+    var message = "Are you sure you want to delete the following entry?\n\n";
+    message += "Timestamp: " + timestamp + "\n";
+    message += "Van Number: " + van + "\n";
+    message += "Body: " + body;
 
-        if (confirm(message)) {
-            deleteEntry(entryId);
-        }
+    if (confirm(message)) {
+        deleteEntry(entryId);
     }
+}
 
     function deleteEntry(entryId) {
         fetch("/inbox/delete-entry", {
