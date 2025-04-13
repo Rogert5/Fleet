@@ -118,28 +118,35 @@
     });
 }
 
-    function deleteEntry(entryId) {
-        fetch("/inbox/delete-entry", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ entryId: entryId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const entryElement = document.getElementById(`entry-${entryId}`);
-                if (entryElement) {
-                    entryElement.parentNode.removeChild(entryElement);
-                    alert("Entry deleted successfully!");
-                }
-            } else {
-                console.error('Failed to delete entry');
+function deleteEntry(entryId) {
+    fetch("/inbox/delete-entry", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ entryId: entryId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const entryElement = document.getElementById(`entry-${entryId}`);
+            if (entryElement) {
+                entryElement.parentNode.removeChild(entryElement);
+
+                // 🎉 SweetAlert success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Entry Deleted',
+                    text: 'The entry has been successfully removed.',
+                    confirmButtonColor: '#3085d6'
+                });
             }
-        })
-        .catch(error => console.error('Error deleting entry:', error));
-    }
+        } else {
+            console.error('Failed to delete entry');
+        }
+    })
+    .catch(error => console.error('Error deleting entry:', error));
+}
 
     
     function handleDeleteButtonClick(button) {
