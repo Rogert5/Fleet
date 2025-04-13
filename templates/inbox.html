@@ -73,7 +73,13 @@
     </div>
 </div>
 
-<!-- Scripts -->
+<!-- -->
+<!-- SCRIPTS -->
+ <!-- -->
+<!-- ✅ SweetAlert2 for custom confirm boxes -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
@@ -86,14 +92,25 @@
     });
 
     function confirmDelete(timestamp, van, body, entryId) {
-    var message = "Are you sure you want to delete the following entry?\n\n";
-    message += "Timestamp: " + timestamp + "\n";
-    message += "Van Number: " + van + "\n";
-    message += "Body: " + body;
+    let message = `
+        <strong>Timestamp:</strong> ${timestamp}<br>
+        <strong>Van Number:</strong> ${van}<br>
+        <strong>Body:</strong> ${body}
+    `;
 
-    if (confirm(message)) {
-        deleteEntry(entryId);
-    }
+    Swal.fire({
+        title: 'Are you sure?',
+        html: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33' // 🔴 red button
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteEntry(entryId);
+        }
+    });
 }
 
     function deleteEntry(entryId) {
