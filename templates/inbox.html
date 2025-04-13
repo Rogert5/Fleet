@@ -44,11 +44,16 @@
                 <p>{{ entry.body }}</p>
             </div>
             <div class="buttons">         
-                <button type="button" class="btn btn-danger"
-                    onclick="confirmDelete('{{ entry.timestamp.strftime('%Y-%m-%d') }}',
-                                            '{{ entry.van }}',
-                                            '{{ entry.body | replace('\\n', ' ') | escape }}',
-                                            '{{ entry.id }}')">Delete</button>
+                    <button type="button"
+                    class="btn btn-danger"
+                    data-timestamp="{{ entry.timestamp.strftime('%Y-%m-%d') }}"
+                    data-van="{{ entry.van }}"
+                    data-body="{{ entry.body | escape }}"
+                    data-entry-id="{{ entry.id }}"
+                    onclick="handleDeleteButtonClick(this)">
+                        Delete
+                        </button>
+        
             </div>
         </div>
     </div>
