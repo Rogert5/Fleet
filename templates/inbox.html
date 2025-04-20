@@ -37,7 +37,7 @@
     <div class="entry-wrapper">
         <div class="entry list-group-item" id="entry-{{ entry.id }}">
             <div class="entry-meta">
-                <p style="color: red;">{{ entry.timestamp.strftime('%Y-%m-%d') }}</p>
+                <p style="color: red;">{{ entry.timestamp.strftime('%m-%d-%y') }}</p>
                 <p>Van Number: <span style="color: black; font-size: 30px;">{{ entry.van }}</span></p>
             </div>
             <div class="entry-body">
@@ -46,7 +46,7 @@
             <div class="buttons">         
                     <button type="button"
                     class="btn btn-danger"
-                    data-timestamp="{{ entry.timestamp.strftime('%Y-%m-%d') }}"
+                    data-timestamp="{{ entry.timestamp.strftime('%m-%d-%y') }}"
                     data-van="{{ entry.van }}"
                     data-body="{{ entry.body | escape }}"
                     data-entry-id="{{ entry.id }}"
