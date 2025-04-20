@@ -2,13 +2,20 @@
 
 <html lang="en">
 
-{% if get_flashed_messages() %}
-<header>
-    <div class="alert alert-success mb-0 text-center" role="alert">
-        {{ get_flashed_messages() | join(" ") }}
-    </div>
-</header>
-{% endif %}
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: '{{ messages[0] }}',
+                    confirmButtonColor: '#3085d6'
+                });
+            });
+        </script>
+    {% endif %}
+{% endwith %}
 
 
         <meta charset="utf-8">
