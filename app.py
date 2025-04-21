@@ -204,23 +204,33 @@ def admin():
 def inbox():
     order_by = request.args.get("order_by", "timestamp")  # Default to ordering by timestamp
     if order_by not in ["timestamp", "van"]:
-        order_by = "timestamp"  # Default to timestamp if invalid order_by value(incase of errors)
+        order_by = "timestamp"
 
+    # Fetch all entries
+    entries = Entry.query.all()
+
+    # Prepare entry list without converting van to int
+    entry_list = [
+        {"id": entry.id, "van": entry.van, "body": entry.body, "timestamp": entry.timestamp}
+        for entry in entries
+    ]
+
+    # Custom function to extract van number for sorting
+    def extract_van_number(van):
+        if van.startswith("L") and van[1:].isdigit():
+            return int(van[1:])
+        elif van.isdigit():
+            return int(van)
+        else:
+            return float('inf')  # Push non-numeric to end
+
+    # Sort based on selected order
     if order_by == "timestamp":
-        entries = Entry.query.order_by(Entry.timestamp.desc())  # Order by date (descending)
-        entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
-
-        
-        # Sort the entry list by date in descending order
         entry_list.sort(key=lambda x: x['timestamp'], reverse=True)
     elif order_by == "van":
-        entries = Entry.query.order_by(Entry.van.cast(db.Integer).asc())  # Order by van (ascending) as integers
-        entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
-        entry_list.sort(key=lambda x: (x['van'], x['timestamp']))  # Sort by van and then timestamp
+        entry_list.sort(key=lambda x: (extract_van_number(x['van']), x['timestamp']))
 
     return render_template("inbox.html", entries=entry_list, order_by=order_by)
-
-
 
 
 # Delete note from the databasegit a
