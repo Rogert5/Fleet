@@ -145,7 +145,8 @@ def home():
 def compose():
     if request.method == "POST":
         van = request.form.get("van")
-        body = request.form.get("body").replace("\r", "")  # Remove carriage returns
+        van = van.upper()  # ✅ Force van input to be uppercase
+        body = request.form.get("body").replace("\r", "")
         image_file = request.files.get("image")  # ✅ Handle uploaded image
 
         # Get the current UTC time
