@@ -138,14 +138,13 @@ def home():
         return render_template("home.html", notes=notes)
         
 
-# compose route for entry in Inbox.html
+# Compose route for entry in Inbox.html
 @app.route("/compose", methods=["GET", "POST"])
 def compose():
     if request.method == "POST":
-        van = request.form.get("van")
-        van = van.upper()  # ✅ Force van input to be uppercase
-        body = request.form.get("body").replace("\r", "")
-        image_file = request.files.get("image")  # ✅ Handle uploaded image
+        van = request.form.get("van", "").strip().upper()  # Force van to uppercase and trim spaces
+        body = request.form.get("body", "").replace("\r", "")
+        image_file = request.files.get("image")  # Handle uploaded image
 
         # Get the current UTC time
         utc_now = datetime.utcnow()
@@ -155,20 +154,17 @@ def compose():
         if van.startswith("L") and van[1:].isdigit():
             van_num = int(van[1:])
             if not (1 <= van_num <= 58):
-                apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
-                return render_template("apology.html", top="Error", bottom=apology_message)
+                return render_template("apology.html", top="Error", bottom="Sorry, only L1-L58 are allowed.")
         elif van.isdigit():
             van_num = int(van)
             if not (1 <= van_num <= 58):
-                apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
-                return render_template("apology.html", top="Error", bottom=apology_message)
+                return render_template("apology.html", top="Error", bottom="Sorry, only 1-58 are allowed.")
         else:
-            apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
-            return render_template("apology.html", top="Error", bottom=apology_message)
+            return render_template("apology.html", top="Error", bottom="Invalid van format. Use 1-58 or L1-L58.")
 
-        # ✅ Handle image saving (if present)
+        # Handle image saving (if present)
         image_url = None
-        if image_file and image_file.filename != "":
+        if image_file and image_file.filename:
             filename = image_file.filename
             upload_folder = os.path.join("static", "uploads")
             os.makedirs(upload_folder, exist_ok=True)
@@ -184,6 +180,7 @@ def compose():
         flash("Entry Successful")
         return redirect("inbox")
 
+    # If GET request, just render the compose form (inbox)
     return render_template("inbox.html")
 
 

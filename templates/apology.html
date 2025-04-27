@@ -5,15 +5,21 @@
 {% endblock %}
 
 {% block main %}
-    <!-- Button -->
+<div class="container text-center">
 
-    <!-- https://memegen.link/ -->
-    <img alt="{{ top }}" class="border img-fluid" src=" https://api.memegen.link/images/custom/_/only_numbers_1--29_and_52--58_do_not_add_''g''.jpg?background=https%3A%2F%2Fwww.elegantthemes.com%2Fblog%2Fwp-content%2Fuploads%2F2020%2F08%2F000-http-error-codes.png&watermark=MemeComplete.com&token=o32zx29qws2xujdwweicwidth=200&height=300">
+    <h1 class="text-danger">⚠️ Error</h1>
+
+    <p style="font-size: 1.2em;">
+        {{ bottom }}
+    </p>
+
+    <img alt="{{ top }}" class="border img-fluid mt-4" 
+         src="https://api.memegen.link/images/custom/_/{{ bottom | urlencode }}.jpg?background=https%3A%2F%2Fwww.elegantthemes.com%2Fblog%2Fwp-content%2Fuploads%2F2020%2F08%2F000-http-error-codes.png"
+         style="max-width: 500px; height: auto;">
     
-    <div>
-        <a href="{{ url_for('inbox') }}" class="btn btn-primary mt-3">Back to Inbox</a>
+    <div class="mt-4">
+        <a href="{{ url_for('inbox') }}" class="btn btn-primary btn-lg">Back to Inbox</a>
     </div>
 
-
+</div>
 {% endblock %}
-
