@@ -7,15 +7,20 @@
 {% block main %}
 <div class="container">
     <!-- Compose Form -->
-    <form action="/compose" method="post">
+    <form action="/compose" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <h4>Van Number</h4>
-            <input maxlength="2" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(numbers only)">
+            <input maxlength="3" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(e.g., 1-58 or L1-L58)">
         </div>
         <h3>Maintenance</h3>
         <div class="mb-3">
             <textarea cols="50" rows="5" maxlength="200" name="body" placeholder="200 character limit"></textarea>
         </div>
+       <!-- Image Upload 
+        <div class="mb-3">
+            <label for="image">Upload Image (optional):</label>
+            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+        </div> -->
         <button class="btn btn-primary" type="submit">Send</button>
     </form>
 
@@ -44,17 +49,20 @@
                 <p>{{ entry.body }}</p>
             </div>
             <div class="buttons">         
-                    <button type="button"
+                <button type="button"
                     class="btn btn-danger"
                     data-timestamp="{{ entry.timestamp.strftime('%m-%d-%y') }}"
                     data-van="{{ entry.van }}"
                     data-body="{{ entry.body | escape }}"
                     data-entry-id="{{ entry.id }}"
                     onclick="handleDeleteButtonClick(this)">
-                        Delete
-                        </button>
-        
-            </div>
+                    Delete
+                </button>
+            
+                {% if entry.image_url %}
+                <a href="{{ entry.image_url }}" target="_blank" class="btn btn-info">Image</a>
+                {% endif %}
+            </div>            
         </div>
     </div>
     {% endfor %}
