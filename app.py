@@ -71,6 +71,7 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(), nullable=False)
     body = db.Column(db.String(), nullable=False)
+    image_url = db.Column(db.String(255))
     
     # Define a function to get the default timestamp value in CST
     @staticmethod
@@ -142,33 +143,41 @@ def home():
 def compose():
     if request.method == "POST":
         van = request.form.get("van")
-        body = request.form.get("body").replace("\r", "")  # Remove carriage returns
+        van = van.upper()  # ✅ Force van input to be uppercase
+        body = request.form.get("body").replace("\r", "")
+        image_file = request.files.get("image")  # ✅ Handle uploaded image
 
         # Get the current UTC time
         utc_now = datetime.utcnow()
-        # Convert UTC time to CST
         cst_time = convert_utc_to_cst(utc_now)
 
-        # Check if van format is valid
+        # Validate van number
         if van.startswith("L") and van[1:].isdigit():
             van_num = int(van[1:])
             if not (1 <= van_num <= 58):
                 apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
                 return render_template("apology.html", top="Error", bottom=apology_message)
-
         elif van.isdigit():
             van_num = int(van)
             if not (1 <= van_num <= 58):
                 apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
                 return render_template("apology.html", top="Error", bottom=apology_message)
-
         else:
-            # Apology if invalid format is detected
             apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
             return render_template("apology.html", top="Error", bottom=apology_message)
 
-        # Create and store entry in the database
-        entry = Entry(van=van, body=body, timestamp=cst_time)  # Include timestamp
+        # ✅ Handle image saving (if present)
+        image_url = None
+        if image_file and image_file.filename != "":
+            filename = image_file.filename
+            upload_folder = os.path.join("static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+            image_path = os.path.join(upload_folder, filename)
+            image_file.save(image_path)
+            image_url = f"/static/uploads/{filename}"
+
+        # Create and save entry
+        entry = Entry(van=van, body=body, image_url=image_url, timestamp=cst_time)
         db.session.add(entry)
         db.session.commit()
 
@@ -176,6 +185,7 @@ def compose():
         return redirect("inbox")
 
     return render_template("inbox.html")
+
 
 
 
@@ -200,22 +210,35 @@ def admin():
 # Rearrange inbox entries by date (descending) and van (ascending)
 @app.route("/inbox", methods=["GET", "POST"])
 def inbox():
-    order_by = request.args.get("order_by", "timestamp")  # Default to ordering by timestamp
+    order_by = request.args.get("order_by", "timestamp")
     if order_by not in ["timestamp", "van"]:
-        order_by = "timestamp"  # Default to timestamp if invalid order_by value(incase of errors)
+        order_by = "timestamp"
+
+    entries = Entry.query.all()
+
+    entry_list = [{
+        "id": entry.id,
+        "van": entry.van,
+        "body": entry.body,
+        "timestamp": entry.timestamp,
+        "image_url": entry.image_url
+    } for entry in entries]
+
+    def custom_van_sort(entry):
+        van = entry['van']
+        is_lvan = van.startswith("L")
+        try:
+            num = int(van[1:] if is_lvan else van)
+        except ValueError:
+            num = float('inf')  # fallback if van format is invalid
+        return (0 if is_lvan else 1, num, entry['timestamp'])
 
     if order_by == "timestamp":
-        entries = Entry.query.order_by(Entry.timestamp.desc())  # Order by date (descending)
-        entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
-
-        
-        # Sort the entry list by date in descending order
         entry_list.sort(key=lambda x: x['timestamp'], reverse=True)
     elif order_by == "van":
-        entries = Entry.query.order_by(Entry.van.cast(db.Integer).asc())  # Order by van (ascending) as integers
-        entry_list = [{"id": entry.id, "van": int(entry.van), "body": entry.body, "timestamp": entry.timestamp} for entry in entries]
-        entry_list.sort(key=lambda x: (x['van'], x['timestamp']))  # Sort by van and then timestamp
+        entry_list.sort(key=custom_van_sort)
 
+    # ✅ RETURN the rendered page
     return render_template("inbox.html", entries=entry_list, order_by=order_by)
 
 
