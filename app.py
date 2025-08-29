@@ -207,7 +207,7 @@ def admin():
 # Rearrange inbox entries by date (descending) and van (ascending)
 @app.route("/inbox", methods=["GET", "POST"])
 def inbox():
-    order_by = request.args.get("order_by", "timestamp")
+    order_by = request.args.get("order_by", "van")
     if order_by not in ["timestamp", "van"]:
         order_by = "timestamp"
 
