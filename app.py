@@ -151,16 +151,32 @@ def compose():
         cst_time = convert_utc_to_cst(utc_now)
 
         # Validate van number
-        if van.startswith("L") and van[1:].isdigit():
+        valid_prefixes = ["L", "H", "G"]
+
+        # Normalize casing
+        van = van.upper()
+
+        # If it's just digits, convert to G-prefixed
+        if van.isdigit():
+            van_num = int(van)
+            if 1 <= van_num <= 58:
+                van = f"G{van_num}"
+            else:
+                apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
+                return render_template("apology.html", top="Error", bottom=apology_message)
+
+        # If it's prefixed (L, G, H)
+        elif any(van.startswith(prefix) and van[1:].isdigit() for prefix in valid_prefixes):
             van_num = int(van[1:])
             if not (1 <= van_num <= 58):
-                return render_template("apology.html", top="Error", bottom="Sorry, only L1-L58 are allowed.")
-        elif van.isdigit():
-            van_num = int(van)
-            if not (1 <= van_num <= 58):
-                return render_template("apology.html", top="Error", bottom="Sorry, only 1-58 are allowed.")
+                apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
+                return render_template("apology.html", top="Error", bottom=apology_message)
+
         else:
-            return render_template("apology.html", top="Error", bottom="Invalid van format. Use 1-58 or L1-L58.")
+            # Invalid format
+            apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
+            return render_template("apology.html", top="Error", bottom=apology_message)
+
 
         # Handle image saving (if present)
         image_url = None
@@ -204,7 +220,7 @@ def admin():
     
 
     
-# Rearrange inbox entries by date (descending) and van (ascending)
+# Rearrange inbox entries by date (descending) or van (ascending)
 @app.route("/inbox", methods=["GET", "POST"])
 def inbox():
     order_by = request.args.get("order_by", "van")
@@ -218,25 +234,30 @@ def inbox():
         "van": entry.van,
         "body": entry.body,
         "timestamp": entry.timestamp,
-        "image_url": entry.image_url
+        "image_url": getattr(entry, "image_url", None)  # fallback if field missing
     } for entry in entries]
 
+    # Define custom sorting for vans with optional prefixes
     def custom_van_sort(entry):
-        van = entry['van']
-        is_lvan = van.startswith("L")
-        try:
-            num = int(van[1:] if is_lvan else van)
-        except ValueError:
-            num = float('inf')  # fallback if van format is invalid
-        return (0 if is_lvan else 1, num, entry['timestamp'])
+        van = entry["van"].upper()
+        prefix_order = {"": 0, "L": 1, "H": 2, "G": 3}
+        for prefix in prefix_order:
+            if van.startswith(prefix):
+                try:
+                    num = int(van[len(prefix):])
+                    return (prefix_order[prefix], num, entry["timestamp"])
+                except ValueError:
+                    break
+        return (999, float("inf"), entry["timestamp"])  # fallback
 
+    # Apply sorting
     if order_by == "timestamp":
-        entry_list.sort(key=lambda x: x['timestamp'], reverse=True)
+        entry_list.sort(key=lambda x: x["timestamp"], reverse=True)
     elif order_by == "van":
         entry_list.sort(key=custom_van_sort)
 
-    # ✅ RETURN the rendered page
     return render_template("inbox.html", entries=entry_list, order_by=order_by)
+
 
 
 
