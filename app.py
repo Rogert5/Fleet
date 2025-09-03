@@ -239,8 +239,9 @@ def inbox():
 
     # Define custom sorting for vans with optional prefixes
     def custom_van_sort(entry):
-        van = entry["van"].upper()
-        prefix_order = {"": 0, "L": 1, "H": 2, "G": 3}
+        van = entry["van"].upper()  # normalize casing
+        prefix_order = {"L": 0, "G": 1, "H": 2, "": 3}  # L first, then G, then H, then any leftover junk
+
         for prefix in prefix_order:
             if van.startswith(prefix):
                 try:
@@ -248,7 +249,9 @@ def inbox():
                     return (prefix_order[prefix], num, entry["timestamp"])
                 except ValueError:
                     break
-        return (999, float("inf"), entry["timestamp"])  # fallback
+
+        return (999, float("inf"), entry["timestamp"])  # fallback for malformed entries
+
 
     # Apply sorting
     if order_by == "timestamp":
