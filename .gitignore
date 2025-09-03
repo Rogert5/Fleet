@@ -1,3 +1,10 @@
 venv/
 
-static/uploads/
+
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
+# Ignore HTML test or temp files
+templates/Current Website.html
