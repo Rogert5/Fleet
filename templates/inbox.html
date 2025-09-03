@@ -11,19 +11,19 @@
         <form action="/compose" method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <h4>Van Number</h4>
-                <input maxlength="3" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(1-58 or L1-L58)">
+                <input maxlength="3" autocomplete="off" autofocus class="form-control mx-auto w-auto" id="van" name="van" type="text" placeholder="(Ex: G5, L12, H20)">
             </div>
             <h3>Maintenance</h3>
             <div class="mb-3">
                 <textarea cols="50" rows="5" maxlength="200" name="body" placeholder="200 character limit"></textarea>
             </div>
             <!-- Image Upload (optional, future use) -->
-            <!--
+
             <div class="mb-3">
                 <label for="image">Upload Image (optional):</label>
                 <input type="file" class="form-control" id="image" name="image" accept="image/*">
             </div>
-            -->
+
             <button class="btn btn-primary" type="submit">Send</button>
         </form>
     </div>

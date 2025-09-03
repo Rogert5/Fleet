@@ -154,19 +154,33 @@ def compose():
         cst_time = convert_utc_to_cst(utc_now)
 
         # Validate van number
-        if van.startswith("L") and van[1:].isdigit():
+        valid_prefixes = ["L", "H", "G"]
+
+        # Normalize casing
+        van = van.upper()
+
+        # If it's just digits, convert to G-prefixed
+        if van.isdigit():
+            van_num = int(van)
+            if 1 <= van_num <= 58:
+                van = f"G{van_num}"
+            else:
+                apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
+                return render_template("apology.html", top="Error", bottom=apology_message)
+
+        # If it's prefixed (L, G, H)
+        elif any(van.startswith(prefix) and van[1:].isdigit() for prefix in valid_prefixes):
             van_num = int(van[1:])
             if not (1 <= van_num <= 58):
-                apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
+                apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
                 return render_template("apology.html", top="Error", bottom=apology_message)
-        elif van.isdigit():
-            van_num = int(van)
-            if not (1 <= van_num <= 58):
-                apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
-                return render_template("apology.html", top="Error", bottom=apology_message)
+
         else:
-            apology_message = "Sorry, only numbers between 1-58 or in the format L1-L58 are allowed."
+            # Invalid format
+            apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
             return render_template("apology.html", top="Error", bottom=apology_message)
+
+
 
         # ✅ Handle image saving (if present)
         image_url = None
