@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import os
+import uuid
 
 from urllib.parse import urlparse
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
@@ -195,11 +196,18 @@ def compose():
 
         # Handle image saving (if present)
         if image_file and image_file.filename and allowed_file(image_file.filename):
-            filename = secure_filename(image_file.filename)
+            unique_suffix = uuid.uuid4().hex
+            ext = image_file.filename.rsplit('.', 1)[-1]
+            filename = f"{secure_filename(van)}_{unique_suffix}.{ext}"
             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             image_file.save(filepath)
             image_url = f"/static/uploads/{filename}"
+
+        elif image_file:
+            flash("Invalid file type. Please upload a PNG, JPG, JPEG, or GIF.")
+            return redirect("inbox")
+
 
         # Create and save entry
         entry = Entry(van=van, body=body, timestamp=cst_time, image_url=image_url)
