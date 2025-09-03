@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import psycopg2
 from helpers import apology
 from collections import defaultdict
 import json
+from werkzeug.utils import secure_filename
 
 #MASTER BRANCH
 # -----------------------------
@@ -51,6 +52,19 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
+
+# Ensure this is somewhere near the top of your app.py
+UPLOAD_FOLDER = os.path.join("static", "uploads")
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
 # -----------------------------
 # Helper Functions
 # -----------------------------
@@ -71,7 +85,7 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van = db.Column(db.String(), nullable=False)
     body = db.Column(db.String(), nullable=False)
-    image_url = db.Column(db.String(255))
+    image_url = db.Column(db.String(), nullable=True)
     
     # Define a function to get the default timestamp value in CST
     @staticmethod
@@ -138,6 +152,7 @@ def home():
         return render_template("home.html", notes=notes)
         
 
+
 # Compose route for entry in Inbox.html
 @app.route("/compose", methods=["GET", "POST"])
 def compose():
@@ -152,6 +167,7 @@ def compose():
 
         # Validate van number
         valid_prefixes = ["L", "H", "G"]
+        image_url = None  # Default if no image is attached
 
         # Normalize casing
         van = van.upper()
@@ -177,19 +193,16 @@ def compose():
             apology_message = "Only 1–58 or L1–L58, G1–G58, or H1–H58 are allowed."
             return render_template("apology.html", top="Error", bottom=apology_message)
 
-
         # Handle image saving (if present)
-        image_url = None
-        if image_file and image_file.filename:
-            filename = image_file.filename
-            upload_folder = os.path.join("static", "uploads")
-            os.makedirs(upload_folder, exist_ok=True)
-            image_path = os.path.join(upload_folder, filename)
-            image_file.save(image_path)
+        if image_file and image_file.filename and allowed_file(image_file.filename):
+            filename = secure_filename(image_file.filename)
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image_file.save(filepath)
             image_url = f"/static/uploads/{filename}"
 
         # Create and save entry
-        entry = Entry(van=van, body=body, image_url=image_url, timestamp=cst_time)
+        entry = Entry(van=van, body=body, timestamp=cst_time, image_url=image_url)
         db.session.add(entry)
         db.session.commit()
 
