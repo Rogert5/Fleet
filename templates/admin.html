@@ -7,14 +7,15 @@
 {% block main %}
 
 <div class="container colored-container">
+
+    <!-- Static VIN Table -->
     <div class="section">
-        <h2>Van Identifications</h2>
+        <h2>Van Identifications (Hardcoded)</h2>
     </div>
 
     <!-- Search bar placed above the table -->
     <input type="text" id="searchBar" placeholder="Search">
 
-    <!-- Single table element containing the table -->
     <table id="vanTable" class="table table-bordered">
         <thead>
             <tr>
@@ -57,41 +58,76 @@
             <tr><td>G57</td><td>3C6TRVBG5LE134869</td></tr>            
         </tbody>
     </table>
+
+    <hr>
+
+    <!-- Dynamic Van Management (Database-based) -->
+    <h2>Manage Vans (Live)</h2>
+
+    <!-- Add New Van -->
+    <form action="/admin/add" method="post" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" name="label" class="form-control" placeholder="Van Label (e.g., L5)" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="vin" class="form-control" placeholder="VIN Number" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Add Van</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Editable Table -->
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Van</th>
+                <th>VIN</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for van in vans %}
+            <tr>
+                <form action="/admin/update" method="post">
+                    <input type="hidden" name="id" value="{{ van.id }}">
+                    <td><input type="text" name="label" value="{{ van.label }}" class="form-control" required></td>
+                    <td><input type="text" name="vin" value="{{ van.vin }}" class="form-control" required></td>
+                    <td>
+                        <button type="submit" class="btn btn-success btn-sm">Update</button>
+                        <a href="/admin/delete/{{ van.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
+<!-- 🔍 Search bar script (unchanged) -->
+<script>
+    document.getElementById('searchBar').addEventListener('input', function () {
+        var query = this.value.toUpperCase();
+        var rows = document.getElementById('vanTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
- <script>
-    document.getElementById('searchBar').addEventListener('input', function() {
-    // Get the query (convert it to uppercase for case-insensitive search)
-    var query = this.value.toUpperCase();
+        for (var i = 0; i < rows.length; i++) {
+            var cols = rows[i].getElementsByTagName('td');
+            var rowMatchesQuery = false;
+            var columnsToCheck = [0, 1];
 
-    // Get the table rows
-    var rows = document.getElementById('vanTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
-    // Loop through the rows
-    for (var i = 0; i < rows.length; i++) {
-        // Get the columns (cells) of the current row
-        var cols = rows[i].getElementsByTagName('td');
-
-        // Assume the row doesn't match the query
-        var rowMatchesQuery = false;
-
-        // Check the Van (1st), License Plate (2nd), and VIN Number (3rd) columns
-        var columnsToCheck = [0, 1]; // adjust as per your table column order
-        for (var j = 0; j < columnsToCheck.length; j++) {
-            var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-            if (cellText.includes(query)) {
-                // If cell text includes the query, this row matches
-                rowMatchesQuery = true;
-                break;
+            for (var j = 0; j < columnsToCheck.length; j++) {
+                var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                if (cellText.includes(query)) {
+                    rowMatchesQuery = true;
+                    break;
+                }
             }
+
+            rows[i].style.display = rowMatchesQuery ? '' : 'none';
         }
-
-        // Show/hide the row depending on whether it matches the query
-        rows[i].style.display = rowMatchesQuery ? '' : 'none';
-    }
-});
-
- </script>
+    });
+</script>
 
 {% endblock %}

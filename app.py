@@ -88,6 +88,11 @@ class Entry(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=default_cst_timestamp)
 
 
+class Van(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(10), nullable=False, unique=True)   # e.g., G1, L5, etc.
+    vin = db.Column(db.String(30), nullable=False)
+
 
 #Defines Note used in Admin page to send post it notes between management
 class Note(db.Model):
@@ -213,13 +218,60 @@ def grid():
     return render_template("grid.html", entries=entries)
 
 
-
-#admin user page makes it have the ability to post a note in notes through the POST method
-@app.route("/admin", methods=["GET", "POST"])
+#Admin edit/delete/change
+@app.route("/admin", methods=["GET"])
 def admin():
+    vans = Van.query.order_by(Van.label).all()
+    return render_template("admin.html", vans=vans)
 
-    # Pass notes to the template
-    return render_template("admin.html")
+
+@app.route("/admin/add", methods=["POST"])
+def add_van():
+    label = request.form.get("label", "").upper().strip()
+    vin = request.form.get("vin", "").strip()
+
+    if label and vin:
+        existing = Van.query.filter_by(label=label).first()
+        if not existing:
+            new_van = Van(label=label, vin=vin)
+            db.session.add(new_van)
+            db.session.commit()
+            flash("Van added successfully.")
+        else:
+            flash("Van label already exists.")
+    else:
+        flash("Both fields are required.")
+    return redirect("/admin")
+
+
+@app.route("/admin/update", methods=["POST"])
+def update_van():
+    van_id = request.form.get("id")
+    label = request.form.get("label", "").upper().strip()
+    vin = request.form.get("vin", "").strip()
+
+    van = Van.query.get(van_id)
+    if van and label and vin:
+        van.label = label
+        van.vin = vin
+        db.session.commit()
+        flash("Van updated successfully.")
+    else:
+        flash("Invalid update request.")
+    return redirect("/admin")
+
+
+@app.route("/admin/delete/<int:van_id>")
+def delete_van(van_id):
+    van = Van.query.get(van_id)
+    if van:
+        db.session.delete(van)
+        db.session.commit()
+        flash("Van deleted.")
+    else:
+        flash("Van not found.")
+    return redirect("/admin")
+
     
 
     
