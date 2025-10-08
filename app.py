@@ -260,19 +260,41 @@ def update_van():
         flash("Invalid update request.")
     return redirect("/admin")
 
-
-@app.route("/admin/delete/<int:van_id>")
-def delete_van(van_id):
+@app.route("/admin/delete/<int:van_id>", methods=["POST"])
+def delete_van_modal(van_id):
     van = Van.query.get(van_id)
     if van:
         db.session.delete(van)
         db.session.commit()
-        flash("Van deleted.")
-    else:
-        flash("Van not found.")
-    return redirect("/admin")
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Van not found."})
 
-    
+
+# Save (Add or Update) van from modal
+@app.route("/admin/save", methods=["POST"])
+def save_van():
+    data = request.get_json()
+    van_id = data.get("id")
+    label = data.get("label", "").upper().strip()
+    vin = data.get("vin", "").strip()
+
+    if not label or not vin:
+        return jsonify({"status": "error", "message": "Both label and VIN are required."})
+
+    if van_id:
+        van = Van.query.get(van_id)
+        if van:
+            van.label = label
+            van.vin = vin
+    else:
+        existing = Van.query.filter_by(label=label).first()
+        if existing:
+            return jsonify({"status": "error", "message": "Van label already exists."})
+        van = Van(label=label, vin=vin)
+        db.session.add(van)
+
+    db.session.commit()
+    return jsonify({"status": "success"})   
 
     
 # Rearrange inbox entries by date (descending) and van (ascending)

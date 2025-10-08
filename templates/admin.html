@@ -1,133 +1,139 @@
 {% extends "layout.html" %}
 
-{% block title %}
-    Admin
-{% endblock %}
+{% block title %}Admin{% endblock %}
 
 {% block main %}
-
 <div class="container colored-container">
-
-    <!-- Static VIN Table -->
-    <div class="section">
-        <h2>Van Identifications (Hardcoded)</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2>Van Identifications</h2>
+        <button class="btn btn-success" onclick="addEmptyRow()">
+            <i class="bi bi-plus"></i> Add Van
+        </button>
     </div>
 
-    <!-- Search bar placed above the table -->
-    <input type="text" id="searchBar" placeholder="Search">
+    <input type="text" id="searchBar" class="form-control mb-3" placeholder="Search...">
 
-    <table id="vanTable" class="table table-bordered">
+    <table id="vanTable" class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Van</th>
-                <th>VIN Number</th>
+                <th class="text-center">Van</th>
+                <th class="text-center">VIN Number</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>G1</td><td>3C6URVJG8KE545204</td></tr>
-            <tr><td>G2</td><td>3C6URVJG0LE113112</td></tr>
-            <tr><td>G3</td><td>3C6URVJG1LE113135</td></tr>
-            <tr><td>G4</td><td>3C6URVJG6LE112921</td></tr>
-            <tr><td>G5</td><td>3C6URVJGXKE545205</td></tr>
-            <tr><td>G6</td><td>3C6URVJG7KE545243</td></tr>
-            <tr><td>G7</td><td>3C6URVJG7KE543721</td></tr>
-            <tr><td>G8</td><td>3C6URVJG6KE553303</td></tr>
-            <tr><td>G9</td><td>3C6MRVJG8ME541401</td></tr>
-            <tr><td>G10</td><td>3C6URVJG5LE112909</td></tr>
-            <tr><td>G11</td><td>3C6URVJG7LE117920</td></tr>
-            <tr><td>G12</td><td>3C6URVJG9KE551318</td></tr>
-            <tr><td>G13</td><td>3C6URVJG0KE551384</td></tr>
-            <tr><td>G14</td><td>3C6URVJG9LE113156</td></tr>
-            <tr><td>G15</td><td>3C6URVJG9LE116686</td></tr>
-            <tr><td>G16</td><td>3C6URVJG3KE551296</td></tr>
-            <tr><td>G17</td><td>3C6URVJG3KE546664</td></tr>
-            <tr><td>G18</td><td>3C6URVJG9LE113142</td></tr>
-            <tr><td>G19</td><td>3C6URVJGXKE551327</td></tr>
-            <tr><td>G20</td><td>3C6URVJG9KE541677</td></tr>
-            <tr><td>G21</td><td>3C6URVJG2LE113144</td></tr>
-            <tr><td>G22</td><td>3C6URVJG8LE117182</td></tr>
-            <tr><td>G23</td><td>3C6URVJGXLE113117</td></tr>
-            <tr><td>G24</td><td>1FTBR3X80LKB28176</td></tr>
-            <tr><td>G25</td><td>3C6URVJG0LE144389</td></tr>
-            <tr><td>G26</td><td>1FTBR3X81LKB33385</td></tr>
-            <tr><td>---</td><td>-----------------</td></tr>
-            <tr><td>G53</td><td>3C6LRVBG4NE139466</td></tr>
-            <tr><td>G54</td><td>3C6LRVBG8NE139468</td></tr>
-            <tr><td>G55</td><td>3C6LRVBG6NE139467</td></tr>
-            <tr><td>G56</td><td>3C6TRVBG3LE134868</td></tr>
-            <tr><td>G57</td><td>3C6TRVBG5LE134869</td></tr>            
-        </tbody>
-    </table>
-
-    <hr>
-
-    <!-- Dynamic Van Management (Database-based) -->
-    <h2>Manage Vans (Live)</h2>
-
-    <!-- Add New Van -->
-    <form action="/admin/add" method="post" class="mb-4">
-        <div class="row">
-            <div class="col-md-3">
-                <input type="text" name="label" class="form-control" placeholder="Van Label (e.g., L5)" required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" name="vin" class="form-control" placeholder="VIN Number" required>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">Add Van</button>
-            </div>
-        </div>
-    </form>
-
-    <!-- Editable Table -->
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Van</th>
-                <th>VIN</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for van in vans %}
-            <tr>
-                <form action="/admin/update" method="post">
-                    <input type="hidden" name="id" value="{{ van.id }}">
-                    <td><input type="text" name="label" value="{{ van.label }}" class="form-control" required></td>
-                    <td><input type="text" name="vin" value="{{ van.vin }}" class="form-control" required></td>
-                    <td>
-                        <button type="submit" class="btn btn-success btn-sm">Update</button>
-                        <a href="/admin/delete/{{ van.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
-                    </td>
-                </form>
-            </tr>
-            {% endfor %}
+            <tr><td class="text-center">G1</td><td class="text-center">3C6URVJG8KE545204</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G1', '3C6URVJG8KE545204')">Edit</button></td></tr>
+            <tr><td class="text-center">G2</td><td class="text-center">3C6URVJG0LE113112</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G2', '3C6URVJG0LE113112')">Edit</button></td></tr>
+            <tr><td class="text-center">G3</td><td class="text-center">3C6MRVJG8ME541401</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G3', '3C6MRVJG8ME541401')">Edit</button></td></tr>
+            <tr><td class="text-center">G4</td><td class="text-center">3C6URVJG8LE117182</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G4', '3C6URVJG8LE117182')">Edit</button></td></tr>
+            <tr><td class="text-center">G5</td><td class="text-center">3C6URVJG9LE113142</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G5', '3C6URVJG9LE113142')">Edit</button></td></tr>
+            <tr><td class="text-center">G6</td><td class="text-center">3C6URVJG3KE551286</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G6', '3C6URVJG3KE551286')">Edit</button></td></tr>
+            <tr><td class="text-center">G7</td><td class="text-center">3C6URVJG0LE144389</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G7', '3C6URVJG0LE144389')">Edit</button></td></tr>
+            <tr><td class="text-center">G8</td><td class="text-center">1FTBR3X81LKB33385</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G8', '1FTBR3X81LKB33385')">Edit</button></td></tr>
+            <tr><td class="text-center">G9</td><td class="text-center">1FTBR3X80LKB28176</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G9', '1FTBR3X80LKB28176')">Edit</button></td></tr>
+            <tr><td class="text-center">---</td><td class="text-center">-----------------</td><td></td></tr>
+            <tr><td class="text-center">G52</td><td class="text-center">3C6LRVCG3PE582919</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G52', '3C6LRVCG3PE582919')">Edit</button></td></tr>
+            <tr><td class="text-center">G53</td><td class="text-center">3C6LRVBG4NE139466</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G53', '3C6LRVBG4NE139466')">Edit</button></td></tr>
+            <tr><td class="text-center">G54</td><td class="text-center">3C6LRVBG8NE139468</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G54', '3C6LRVBG8NE139468')">Edit</button></td></tr>
+            <tr><td class="text-center">G55</td><td class="text-center">3C6LRVBG6NE139467</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G55', '3C6LRVBG6NE139467')">Edit</button></td></tr>
+            <tr><td class="text-center">G56</td><td class="text-center">3C6TRVBG3LE134868</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G56', '3C6TRVBG3LE134868')">Edit</button></td></tr>
+            <tr><td class="text-center">G57</td><td class="text-center">3C6TRVBG5LE134869</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G57', '3C6TRVBG5LE134869')">Edit</button></td></tr>
+            <tr><td class="text-center">G58</td><td class="text-center">3C6URVJG5LE129743</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'G58', '3C6URVJG5LE129743')">Edit</button></td></tr>
+            <tr><td class="text-center">---</td><td class="text-center">-----------------</td><td></td></tr>
+            <tr><td class="text-center">H3</td><td class="text-center">3C6URVJG1LE113135</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'H3', '3C6URVJG1LE113135')">Edit</button></td></tr>
+            <tr><td class="text-center">H6</td><td class="text-center">3C6URVJG7KE545243</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'H6', '3C6URVJG7KE545243')">Edit</button></td></tr>
+            <tr><td class="text-center">H8</td><td class="text-center">3C6URVJG6KE553303</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'H8', '3C6URVJG6KE553303')">Edit</button></td></tr>
+            <tr><td class="text-center">H13</td><td class="text-center">3C6URVJG0KE551384</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'H13', '3C6URVJG0KE551384')">Edit</button></td></tr>
+            <tr><td class="text-center">H14</td><td class="text-center">3C6URVJG9LE113156</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'H14', '3C6URVJG9LE113156')">Edit</button></td></tr>
+            <tr><td class="text-center">H23</td><td class="text-center">3C6URVJGXLE113117</td><td class="text-center"><button class="btn btn-primary btn-sm" onclick="openEditModal('', 'H23', '3C6URVJGXLE113117')">Edit</button></td></tr>
         </tbody>
     </table>
 </div>
 
-<!-- 🔍 Search bar script (unchanged) -->
+
+<!-- Edit/Add Modal -->
+<div class="modal fade" id="editVanModal" tabindex="-1" aria-labelledby="editVanModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editVanModalLabel">Edit Van</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editVanForm">
+            <input type="hidden" id="vanId">
+            <div class="mb-3">
+                <label for="editLabel" class="form-label">Van Label</label>
+                <input type="text" class="form-control" id="editLabel" required>
+            </div>
+            <div class="mb-3">
+                <label for="editVin" class="form-label">VIN Number</label>
+                <input type="text" class="form-control" id="editVin" required>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteVan()">Delete</button>
+        <button type="button" class="btn btn-primary" onclick="submitVanEdit()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-    document.getElementById('searchBar').addEventListener('input', function () {
-        var query = this.value.toUpperCase();
-        var rows = document.getElementById('vanTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    const csrfToken = '{{ csrf_token() if csrf_token else '' }}';
 
-        for (var i = 0; i < rows.length; i++) {
-            var cols = rows[i].getElementsByTagName('td');
-            var rowMatchesQuery = false;
-            var columnsToCheck = [0, 1];
+    // Open modal with van data
+    function openEditModal(id, label, vin) {
+        document.getElementById('vanId').value = id || '';
+        document.getElementById('editLabel').value = label || '';
+        document.getElementById('editVin').value = vin || '';
+        new bootstrap.Modal(document.getElementById('editVanModal')).show();
+    }
 
-            for (var j = 0; j < columnsToCheck.length; j++) {
-                var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-                if (cellText.includes(query)) {
-                    rowMatchesQuery = true;
-                    break;
-                }
+    // Save or update
+    function submitVanEdit() {
+        const id = document.getElementById('vanId').value;
+        const label = document.getElementById('editLabel').value;
+        const vin = document.getElementById('editVin').value;
+
+        fetch('/admin/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id, label, vin })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
             }
+        });
+    }
 
-            rows[i].style.display = rowMatchesQuery ? '' : 'none';
-        }
-    });
+    // Confirm delete
+    function confirmDeleteVan() {
+        const id = document.getElementById('vanId').value;
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This van will be deleted.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/admin/delete/' + id, { method: 'POST' })
+                    .then(() => location.reload());
+            }
+        });
+    }
+
+    // Add new empty row for manual add
+    function addEmptyRow() {
+        openEditModal('', '', '');
+    }
 </script>
-
 {% endblock %}
