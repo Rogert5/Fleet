@@ -135,6 +135,9 @@ with app.app_context():
             Van(van_code='G10', vin='3C6URVJG9LE113156'),
             Van(van_code='G11', vin='3C6URVJG7KE545243'),
             Van(van_code='G12', vin='3C6URVJG6KE553303'),
+            Van(van_code='G13', vin='3C6URVJG0KE551384'),
+            Van(van_code='G14', vin='3C6URVJG1LE113135'),
+            Van(van_code='G15', vin='3C6URVJGXLE113117'),
             Van(van_code='G52', vin='3C6LRVCG3PE582919'),
             Van(van_code='G53', vin='3C6LRVBG4NE139466'),
             Van(van_code='G54', vin='3C6LRVBG8NE139468'),
@@ -142,12 +145,10 @@ with app.app_context():
             Van(van_code='G56', vin='3C6TRVBG3LE134868'),
             Van(van_code='G57', vin='3C6TRVBG5LE134869'),
             Van(van_code='G58', vin='3C6URVJG5LE129743'),
-            Van(van_code='H3',  vin='3C6URVJG1LE113135'),
-            Van(van_code='H13', vin='3C6URVJG0KE551384'),
-            Van(van_code='H23', vin='3C6URVJGXLE113117'),
         ]
         db.session.bulk_save_objects(seed_vans)
         db.session.commit()
+
 
 
 # SECOND COPY (safe because models are already defined)
@@ -266,7 +267,6 @@ def grid():
     return render_template("grid.html", entries=entries)
 
 
-
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
     if request.method == "POST":
@@ -285,14 +285,14 @@ def admin():
             flash("Van must be like G1–G58, H1–H58, or L1–L58.")
             return redirect("/admin")
 
-        # Check for duplicates
+        # Check for duplicate van_code
         existing_code = Van.query.filter_by(van_code=van_code).first()
-        existing_vin = Van.query.filter_by(vin=vin).first()
-
         if existing_code:
             flash(f"Van {van_code} already exists.")
             return redirect("/admin")
 
+        # Check for duplicate VIN
+        existing_vin = Van.query.filter_by(vin=vin).first()
         if existing_vin:
             flash(f"VIN {vin} is already assigned to another van.")
             return redirect("/admin")
@@ -317,6 +317,60 @@ def admin():
     vans = Van.query.order_by(group_order, numeric_part).all()
 
     return render_template("admin.html", vans=vans)
+
+@app.route("/vans/<int:van_id>/edit", methods=["POST"])
+def edit_van(van_id):
+    van = Van.query.get_or_404(van_id)
+
+    new_code = request.form.get("van_code", "").strip().upper()
+    new_vin = request.form.get("vin", "").strip().upper()
+
+    if not new_code or not new_vin:
+        flash("Van and VIN are required.")
+        return redirect("/admin")
+
+    # Only allow G/H/L + digits, like G1–G58, H1–H58, L1–L58
+    valid_prefixes = ["G", "H", "L"]
+    if not any(new_code.startswith(p) and new_code[len(p):].isdigit() for p in valid_prefixes):
+        flash("Van must be like G1–G58, H1–H58, or L1–L58.")
+        return redirect("/admin")
+
+    # Check for duplicate van_code (exclude this van)
+    existing_code = Van.query.filter(
+        Van.id != van_id,
+        Van.van_code == new_code
+    ).first()
+    if existing_code:
+        flash(f"Van {new_code} already exists.")
+        return redirect("/admin")
+
+    # Check for duplicate VIN (exclude this van)
+    existing_vin = Van.query.filter(
+        Van.id != van_id,
+        Van.vin == new_vin
+    ).first()
+    if existing_vin:
+        flash(f"VIN {new_vin} is already assigned to another van.")
+        return redirect("/admin")
+
+    # Apply updates
+    van.van_code = new_code
+    van.vin = new_vin
+    db.session.commit()
+
+    flash(f"Van updated to {new_code}.")
+    return redirect("/admin")
+
+@app.route("/vans/<int:van_id>/delete", methods=["POST"])
+def delete_van(van_id):
+    van = Van.query.get_or_404(van_id)
+    code = van.van_code
+
+    db.session.delete(van)
+    db.session.commit()
+
+    flash(f"Van {code} deleted.")
+    return redirect("/admin")
 
     
 
