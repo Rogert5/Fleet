@@ -266,7 +266,6 @@ def grid():
     entries = Entry.query.all()
     return render_template("grid.html", entries=entries)
 
-
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
     if request.method == "POST":
@@ -291,13 +290,13 @@ def admin():
             flash(f"Van {van_code} already exists.")
             return redirect("/admin")
 
-        # Check for duplicate VIN
+        # 🔹 Check for duplicate VIN
         existing_vin = Van.query.filter_by(vin=vin).first()
         if existing_vin:
             flash(f"VIN {vin} is already assigned to another van.")
             return redirect("/admin")
 
-        # Create and save new van
+        # 🔹 Actually create and save the new van
         new_van = Van(van_code=van_code, vin=vin)
         db.session.add(new_van)
         db.session.commit()
@@ -306,17 +305,25 @@ def admin():
         return redirect("/admin")
 
     # GET request: show the admin page with sorted vans
-    group_order = case(
-        (Van.van_code.like('G%'), 1),
-        (Van.van_code.like('H%'), 2),
-        (Van.van_code.like('L%'), 3),
-        else_=4
-    )
-    numeric_part = cast(func.substr(Van.van_code, 2), Integer)
+    vans = Van.query.all()
 
-    vans = Van.query.order_by(group_order, numeric_part).all()
+    def van_sort_key(v):
+        code = (v.van_code or "").upper().strip()
+        prefix_order = {"G": 1, "H": 2, "L": 3}
+        group = 99
+        num = 9999
+        if code:
+            prefix = code[0]
+            group = prefix_order.get(prefix, 98)
+            try:
+                num = int(code[1:])
+            except ValueError:
+                num = 9999
+        return (group, num)
 
+    vans = sorted(vans, key=van_sort_key)
     return render_template("admin.html", vans=vans)
+
 
 @app.route("/vans/<int:van_id>/edit", methods=["POST"])
 def edit_van(van_id):
