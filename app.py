@@ -12,6 +12,8 @@ from helpers import apology
 from collections import defaultdict
 import json
 from werkzeug.utils import secure_filename
+from sqlalchemy import case, func, cast
+from sqlalchemy.types import Integer
 
 #MASTER BRANCH
 # -----------------------------
@@ -75,11 +77,10 @@ def convert_utc_to_cst(utc_time):
     cst_offset = timedelta(hours=-6)
     return utc_time + cst_offset
 
+
 # -----------------------------
 # Model Definitions
 # -----------------------------
-
-
 
 # Define the Entry model used for inbox
 class Entry(db.Model):
@@ -87,8 +88,7 @@ class Entry(db.Model):
     van = db.Column(db.String(), nullable=False)
     body = db.Column(db.String(), nullable=False)
     image_url = db.Column(db.String(), nullable=True)
-    
-    # Define a function to get the default timestamp value in CST
+
     @staticmethod
     def default_cst_timestamp():
         # Get the current UTC time
@@ -101,58 +101,60 @@ class Entry(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=default_cst_timestamp)
 
 
-
-#Defines Note used in Admin page to send post it notes between management
+# Defines Note used in Admin page to send post it notes between management
 class Note(db.Model):
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
 
-#Defines Van id model for editing and deleting van/vins from Admin.html.. SOON STICK WITH VALUE OF VANS Vins
-    class Van(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        van_code = db.Column(db.String(), nullable=False, unique=True)
-        vin = db.Column(db.String(), nullable=False, unique=True)
 
-    # Create tables
-    with app.app_context():
-        db.create_all()
+# Defines Van model for editing and deleting van/vins from Admin.html
+class Van(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    van_code = db.Column(db.String(), nullable=False, unique=True)
+    vin = db.Column(db.String(), nullable=False, unique=True)
 
 
-        # One-time seed – runs only if the table is empty
-        if Van.query.count() == 0:
-            seed_vans = [
-                Van(van_code='G1',  vin='3C6URVJG8KE545204'),
-                Van(van_code='G2',  vin='3C6URVJG0LE113112'),
-                Van(van_code='G3',  vin='3C6MRVJG8ME541401'),
-                Van(van_code='G4',  vin='3C6URVJG8LE117182'),
-                Van(van_code='G5',  vin='3C6URVJG9LE113142'),
-                Van(van_code='G6',  vin='3C6URVJG3KE551296'),
-                Van(van_code='G7',  vin='3C6URVJG0LE144389'),
-                Van(van_code='G8',  vin='1FTBR3X81LKB33385'),
-                Van(van_code='G9',  vin='1FTBR3X80LKB28176'),
-                Van(van_code='G10', vin='3C6URVJG9LE113156'),
-                Van(van_code='G11', vin='3C6URVJG7KE545243'),
-                Van(van_code='G12', vin='3C6URVJG6KE553303'),
-                Van(van_code='G52', vin='3C6LRVCG3PE582919'),
-                Van(van_code='G53', vin='3C6LRVBG4NE139466'),
-                Van(van_code='G54', vin='3C6LRVBG8NE139468'),
-                Van(van_code='G55', vin='3C6LRVBG6NE139467'),
-                Van(van_code='G56', vin='3C6TRVBG3LE134868'),
-                Van(van_code='G57', vin='3C6TRVBG5LE134869'),
-                Van(van_code='G58', vin='3C6URVJG5LE129743'),
-                Van(van_code='H3',  vin='3C6URVJG1LE113135'),
-                Van(van_code='H13', vin='3C6URVJG0KE551384'),
-                Van(van_code='H23', vin='3C6URVJGXLE113117'),
-            ]
-            db.session.bulk_save_objects(seed_vans)
-            db.session.commit()
+# Create tables and seed vans
+with app.app_context():
+    db.create_all()
 
-    # SECOND COPY (safe because models are already defined)
+    # One-time seed – runs only if the table is empty
+    if Van.query.count() == 0:
+        seed_vans = [
+            Van(van_code='G1',  vin='3C6URVJG8KE545204'),
+            Van(van_code='G2',  vin='3C6URVJG0LE113112'),
+            Van(van_code='G3',  vin='3C6MRVJG8ME541401'),
+            Van(van_code='G4',  vin='3C6URVJG8LE117182'),
+            Van(van_code='G5',  vin='3C6URVJG9LE113142'),
+            Van(van_code='G6',  vin='3C6URVJG3KE551296'),
+            Van(van_code='G7',  vin='3C6URVJG0LE144389'),
+            Van(van_code='G8',  vin='1FTBR3X81LKB33385'),
+            Van(van_code='G9',  vin='1FTBR3X80LKB28176'),
+            Van(van_code='G10', vin='3C6URVJG9LE113156'),
+            Van(van_code='G11', vin='3C6URVJG7KE545243'),
+            Van(van_code='G12', vin='3C6URVJG6KE553303'),
+            Van(van_code='G52', vin='3C6LRVCG3PE582919'),
+            Van(van_code='G53', vin='3C6LRVBG4NE139466'),
+            Van(van_code='G54', vin='3C6LRVBG8NE139468'),
+            Van(van_code='G55', vin='3C6LRVBG6NE139467'),
+            Van(van_code='G56', vin='3C6TRVBG3LE134868'),
+            Van(van_code='G57', vin='3C6TRVBG5LE134869'),
+            Van(van_code='G58', vin='3C6URVJG5LE129743'),
+            Van(van_code='H3',  vin='3C6URVJG1LE113135'),
+            Van(van_code='H13', vin='3C6URVJG0KE551384'),
+            Van(van_code='H23', vin='3C6URVJGXLE113117'),
+        ]
+        db.session.bulk_save_objects(seed_vans)
+        db.session.commit()
+
+
+# SECOND COPY (safe because models are already defined)
 def convert_utc_to_cst(utc_time):
     cst_offset = timedelta(hours=-6)
     return utc_time + cst_offset
+
     
 @app.route("/inbox/delete-entry", methods=["POST"])
 def delete_entry():
@@ -265,12 +267,57 @@ def grid():
 
 
 
-#admin user page makes it have the ability to post a note in notes through the POST method
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
+    if request.method == "POST":
+        # Handle "Add Van" form submission
+        van_code = request.form.get("van_code", "").strip().upper()
+        vin = request.form.get("vin", "").strip().upper()
 
-    # Pass notes to the template
-    return render_template("admin.html")
+        # Basic validation
+        if not van_code or not vin:
+            flash("Van and VIN are required.")
+            return redirect("/admin")
+
+        # Only allow G/H/L + digits, like G1–G58, H1–H58, L1–L58
+        valid_prefixes = ["G", "H", "L"]
+        if not any(van_code.startswith(p) and van_code[len(p):].isdigit() for p in valid_prefixes):
+            flash("Van must be like G1–G58, H1–H58, or L1–L58.")
+            return redirect("/admin")
+
+        # Check for duplicates
+        existing_code = Van.query.filter_by(van_code=van_code).first()
+        existing_vin = Van.query.filter_by(vin=vin).first()
+
+        if existing_code:
+            flash(f"Van {van_code} already exists.")
+            return redirect("/admin")
+
+        if existing_vin:
+            flash(f"VIN {vin} is already assigned to another van.")
+            return redirect("/admin")
+
+        # Create and save new van
+        new_van = Van(van_code=van_code, vin=vin)
+        db.session.add(new_van)
+        db.session.commit()
+
+        flash(f"Van {van_code} added successfully.")
+        return redirect("/admin")
+
+    # GET request: show the admin page with sorted vans
+    group_order = case(
+        (Van.van_code.like('G%'), 1),
+        (Van.van_code.like('H%'), 2),
+        (Van.van_code.like('L%'), 3),
+        else_=4
+    )
+    numeric_part = cast(func.substr(Van.van_code, 2), Integer)
+
+    vans = Van.query.order_by(group_order, numeric_part).all()
+
+    return render_template("admin.html", vans=vans)
+
     
 
     
