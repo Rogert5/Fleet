@@ -109,18 +109,51 @@ class Note(db.Model):
     body = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
 
-# Define a function to convert UTC to CST
+#Defines Van id model for editing and deleting van/vins from Admin.html.. SOON STICK WITH VALUE OF VANS Vins
+    class Van(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        van_code = db.Column(db.String(), nullable=False, unique=True)
+        vin = db.Column(db.String(), nullable=False, unique=True)
+
+    # Create tables
+    with app.app_context():
+        db.create_all()
+
+
+        # One-time seed – runs only if the table is empty
+        if Van.query.count() == 0:
+            seed_vans = [
+                Van(van_code='G1',  vin='3C6URVJG8KE545204'),
+                Van(van_code='G2',  vin='3C6URVJG0LE113112'),
+                Van(van_code='G3',  vin='3C6MRVJG8ME541401'),
+                Van(van_code='G4',  vin='3C6URVJG8LE117182'),
+                Van(van_code='G5',  vin='3C6URVJG9LE113142'),
+                Van(van_code='G6',  vin='3C6URVJG3KE551296'),
+                Van(van_code='G7',  vin='3C6URVJG0LE144389'),
+                Van(van_code='G8',  vin='1FTBR3X81LKB33385'),
+                Van(van_code='G9',  vin='1FTBR3X80LKB28176'),
+                Van(van_code='G10', vin='3C6URVJG9LE113156'),
+                Van(van_code='G11', vin='3C6URVJG7KE545243'),
+                Van(van_code='G12', vin='3C6URVJG6KE553303'),
+                Van(van_code='G52', vin='3C6LRVCG3PE582919'),
+                Van(van_code='G53', vin='3C6LRVBG4NE139466'),
+                Van(van_code='G54', vin='3C6LRVBG8NE139468'),
+                Van(van_code='G55', vin='3C6LRVBG6NE139467'),
+                Van(van_code='G56', vin='3C6TRVBG3LE134868'),
+                Van(van_code='G57', vin='3C6TRVBG5LE134869'),
+                Van(van_code='G58', vin='3C6URVJG5LE129743'),
+                Van(van_code='H3',  vin='3C6URVJG1LE113135'),
+                Van(van_code='H13', vin='3C6URVJG0KE551384'),
+                Van(van_code='H23', vin='3C6URVJGXLE113117'),
+            ]
+            db.session.bulk_save_objects(seed_vans)
+            db.session.commit()
+
+    # SECOND COPY (safe because models are already defined)
 def convert_utc_to_cst(utc_time):
-    # Calculate the time difference between UTC and CST (UTC-6 hours)
     cst_offset = timedelta(hours=-6)
-    # Add the offset to the UTC time
-    cst_time = utc_time + cst_offset
-    return cst_time
-
-# Create tables
-with app.app_context():
-    db.create_all()
-
+    return utc_time + cst_offset
+    
 @app.route("/inbox/delete-entry", methods=["POST"])
 def delete_entry():
     entry_id = request.json.get("entryId")
