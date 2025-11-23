@@ -48,6 +48,8 @@
                         >
                             Edit
                         </button>
+
+                        <!-- Popup Delete button -->
                         <button
                             type="button"
                             class="btn btn-sm btn-danger delete-van-btn"
@@ -94,38 +96,38 @@
 
 <!-- Edit Van Popup -->
 <div id="editVanPopup" class="popup-overlay" style="display: none;">
-    <div class="popup-content">
-        <span id="closeEditVanPopup" class="popup-close">&times;</span>
-        <h3>Edit Van</h3>
-        <form id="editVanForm" method="post">
-            <div class="form-group">
-                <label for="edit_van_code">Van:</label>
-                <input type="text" id="edit_van_code" name="van_code" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="edit_vin">VIN:</label>
-                <input type="text" id="edit_vin" name="vin" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-success mt-2">Save Changes</button>
-        </form>
-    </div>
+  <div class="popup-content">
+    <span id="closeEditVanPopup" class="popup-close">&times;</span>
+    <h3>Edit Van</h3>
+    <form id="editVanForm" method="post">
+      <div class="form-group">
+        <label for="edit_van_code">Van:</label>
+        <input type="text" id="edit_van_code" name="van_code" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="edit_vin">VIN:</label>
+        <input type="text" id="edit_vin" name="vin" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-success mt-2">Save Changes</button>
+    </form>
+  </div>
 </div>
 
 <!-- Delete Van Popup -->
 <div id="deleteVanPopup" class="popup-overlay" style="display: none;">
-    <div class="popup-content">
-        <span id="closeDeleteVanPopup" class="popup-close">&times;</span>
-        <h3>Delete Van</h3>
-        <p id="deleteMessage">Are you sure you want to delete this van?</p>
-        <form id="deleteVanForm" method="post">
-            <button type="submit" class="btn btn-danger mt-2">Yes, Delete</button>
-            <button type="button" id="cancelDeleteBtn" class="btn btn-secondary mt-2">Cancel</button>
-        </form>
-    </div>
+  <div class="popup-content">
+    <span id="closeDeleteVanPopup" class="popup-close">&times;</span>
+    <h3>Delete Van</h3>
+    <p id="deleteMessage">Are you sure you want to delete this van?</p>
+    <form id="deleteVanForm" method="post">
+      <button type="submit" class="btn btn-danger mt-2">Yes, Delete</button>
+      <button type="button" id="cancelDeleteBtn" class="btn btn-secondary mt-2">Cancel</button>
+    </form>
+  </div>
 </div>
 
 <script>
-    // SEARCH BAR
+    // === SEARCH BAR (keep as-is) ===
     document.getElementById('searchBar').addEventListener('input', function() {
         var query = this.value.toUpperCase();
         var rows = document.getElementById('vanTable')
@@ -148,7 +150,7 @@
         }
     });
 
-    // ADD VAN POPUP
+    // === ADD VAN POPUP (your original code is fine) ===
     const openAddBtn = document.getElementById('openAddVanPopup');
     const addPopup = document.getElementById('addVanPopup');
     const closeAddBtn = document.getElementById('closeAddVanPopup');
@@ -169,7 +171,7 @@
         });
     }
 
-    // EDIT VAN POPUP
+    // === EDIT VAN POPUP ===
     const editPopup = document.getElementById('editVanPopup');
     const closeEditBtn = document.getElementById('closeEditVanPopup');
     const editForm = document.getElementById('editVanForm');
@@ -182,9 +184,14 @@
             const vin = this.dataset.vin;
             const editUrl = this.dataset.editUrl;
 
+            console.log("[EDIT BTN] code:", code, "vin:", vin, "url:", editUrl);
+
             editVanCodeInput.value = code;
             editVinInput.value = vin;
-            editForm.action = editUrl;
+
+            // Make sure the form posts to /vans/<id>/edit
+            editForm.setAttribute("action", editUrl);
+            editForm.setAttribute("method", "post");
 
             editPopup.style.display = 'block';
         });
@@ -202,7 +209,7 @@
         });
     }
 
-    // DELETE VAN POPUP
+    // === DELETE VAN POPUP ===
     const deletePopup = document.getElementById('deleteVanPopup');
     const closeDeleteBtn = document.getElementById('closeDeleteVanPopup');
     const deleteForm = document.getElementById('deleteVanForm');
@@ -214,8 +221,13 @@
             const code = this.dataset.code;
             const deleteUrl = this.dataset.deleteUrl;
 
+            console.log("[DELETE BTN] code:", code, "url:", deleteUrl);
+
             deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
-            deleteForm.action = deleteUrl;
+
+            // Make sure the form posts to /vans/<id>/delete
+            deleteForm.setAttribute("action", deleteUrl);
+            deleteForm.setAttribute("method", "post");
 
             deletePopup.style.display = 'block';
         });
@@ -237,5 +249,6 @@
         });
     }
 </script>
+
 
 {% endblock %}
