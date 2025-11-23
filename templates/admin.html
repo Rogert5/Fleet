@@ -9,14 +9,6 @@
 <div class="container colored-container">
     <div class="section d-flex justify-content-between align-items-center">
         <h2>Van Identifications</h2>
-        <div style="margin-bottom: 1rem;">
-            <form method="post" action="{{ url_for('admin') }}">
-                <input type="hidden" name="van_code" value="TEST123">
-                <input type="hidden" name="vin" value="TESTVIN123">
-                <button type="submit" class="btn btn-info btn-sm">Test POST</button>
-            </form>
-        </div>
-        
         <button id="openAddVanPopup" class="btn btn-primary">Add Van</button>
     </div>
 
@@ -38,7 +30,8 @@
                     <td class="van-code">{{ van.van_code }}</td>
                     <td class="van-vin">{{ van.vin }}</td>
                     <td>
-                            <button
+                        <!-- EDIT (popup) -->
+                        <button
                             type="button"
                             class="btn btn-sm btn-warning edit-van-btn"
                             data-id="{{ van.id }}"
@@ -49,7 +42,7 @@
                             Edit
                         </button>
 
-                        <!-- Popup Delete button -->
+                        <!-- DELETE (popup) -->
                         <button
                             type="button"
                             class="btn btn-sm btn-danger delete-van-btn"
@@ -59,12 +52,12 @@
                         >
                             Delete
                         </button>
-                    
-                        <!-- 🔹 TEMP: hard delete, no popup, just to test route -->
+
+                        <!-- HARD DELETE (no popup, direct POST) -->
                         <form method="post"
-                            action="{{ url_for('delete_van', van_id=van.id) }}"
-                            style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                              action="{{ url_for('delete_van', van_id=van.id) }}"
+                              style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-secondary">
                                 Hard Delete
                             </button>
                         </form>
@@ -96,179 +89,167 @@
 
 <!-- Edit Van Popup -->
 <div id="editVanPopup" class="popup-overlay" style="display: none;">
-  <div class="popup-content">
-    <span id="closeEditVanPopup" class="popup-close">&times;</span>
-    <h3>Edit Van</h3>
-    <form id="editVanForm" method="post">
-      <div class="form-group">
-        <label for="edit_van_code">Van:</label>
-        <input type="text" id="edit_van_code" name="van_code" class="form-control" required>
-      </div>
-      <div class="form-group">
-        <label for="edit_vin">VIN:</label>
-        <input type="text" id="edit_vin" name="vin" class="form-control" required>
-      </div>
-      <button type="submit" class="btn btn-success mt-2">Save Changes</button>
-    </form>
-  </div>
+    <div class="popup-content">
+        <span id="closeEditVanPopup" class="popup-close">&times;</span>
+        <h3>Edit Van</h3>
+        <form id="editVanForm" method="post">
+            <div class="form-group">
+                <label for="edit_van_code">Van:</label>
+                <input type="text" id="edit_van_code" name="van_code" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_vin">VIN:</label>
+                <input type="text" id="edit_vin" name="vin" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-success mt-2">Save Changes</button>
+        </form>
+    </div>
 </div>
 
 <!-- Delete Van Popup -->
 <div id="deleteVanPopup" class="popup-overlay" style="display: none;">
-  <div class="popup-content">
-    <span id="closeDeleteVanPopup" class="popup-close">&times;</span>
-    <h3>Delete Van</h3>
-    <p id="deleteMessage">Are you sure you want to delete this van?</p>
-    <form id="deleteVanForm" method="post">
-      <button type="submit" class="btn btn-danger mt-2">Yes, Delete</button>
-      <button type="button" id="cancelDeleteBtn" class="btn btn-secondary mt-2">Cancel</button>
-    </form>
-  </div>
+    <div class="popup-content">
+        <span id="closeDeleteVanPopup" class="popup-close">&times;</span>
+        <h3>Delete Van</h3>
+        <p id="deleteMessage">Are you sure you want to delete this van?</p>
+        <form id="deleteVanForm" method="post">
+            <button type="submit" class="btn btn-danger mt-2">Yes, Delete</button>
+            <button type="button" id="cancelDeleteBtn" class="btn btn-secondary mt-2">Cancel</button>
+        </form>
+    </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        console.log("Admin JS loaded");
-    
-        // === SEARCH BAR ===
-        const searchBar = document.getElementById('searchBar');
-        if (searchBar) {
-            searchBar.addEventListener('input', function () {
-                var query = this.value.toUpperCase();
-                var rows = document.getElementById('vanTable')
-                    .getElementsByTagName('tbody')[0]
-                    .getElementsByTagName('tr');
-    
-                for (var i = 0; i < rows.length; i++) {
-                    var cols = rows[i].getElementsByTagName('td');
-                    var rowMatchesQuery = false;
-                    var columnsToCheck = [0, 1]; // Van + VIN
-    
-                    for (var j = 0; j < columnsToCheck.length; j++) {
-                        var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-                        if (cellText.includes(query)) {
-                            rowMatchesQuery = true;
-                            break;
-                        }
+document.addEventListener('DOMContentLoaded', function () {
+
+    // =========================
+    // SEARCH BAR
+    // =========================
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.addEventListener('input', function() {
+            const query = this.value.toUpperCase();
+            const rows = document
+                .getElementById('vanTable')
+                .getElementsByTagName('tbody')[0]
+                .getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cols = rows[i].getElementsByTagName('td');
+                let rowMatchesQuery = false;
+                const columnsToCheck = [0, 1]; // Van + VIN
+
+                for (let j = 0; j < columnsToCheck.length; j++) {
+                    const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                    if (cellText.includes(query)) {
+                        rowMatchesQuery = true;
+                        break;
                     }
-                    rows[i].style.display = rowMatchesQuery ? '' : 'none';
                 }
-            });
-        }
-    
-        // === ADD VAN POPUP ===
-        const openAddBtn = document.getElementById('openAddVanPopup');
-        const addPopup = document.getElementById('addVanPopup');
-        const closeAddBtn = document.getElementById('closeAddVanPopup');
-    
-        if (openAddBtn && addPopup && closeAddBtn) {
-            openAddBtn.addEventListener('click', function () {
-                addPopup.style.display = 'block';
-            });
-    
-            closeAddBtn.addEventListener('click', function () {
+                rows[i].style.display = rowMatchesQuery ? '' : 'none';
+            }
+        });
+    }
+
+    // =========================
+    // ADD VAN POPUP
+    // =========================
+    const openAddBtn = document.getElementById('openAddVanPopup');
+    const addPopup   = document.getElementById('addVanPopup');
+    const closeAddBtn = document.getElementById('closeAddVanPopup');
+
+    if (openAddBtn && addPopup && closeAddBtn) {
+        openAddBtn.addEventListener('click', function () {
+            addPopup.style.display = 'block';
+        });
+
+        closeAddBtn.addEventListener('click', function () {
+            addPopup.style.display = 'none';
+        });
+
+        addPopup.addEventListener('click', function (e) {
+            if (e.target === addPopup) {
                 addPopup.style.display = 'none';
-            });
-    
-            addPopup.addEventListener('click', function (e) {
-                if (e.target === addPopup) {
-                    addPopup.style.display = 'none';
-                }
-            });
-        }
-    
-        // === EDIT VAN POPUP ===
-        const editPopup = document.getElementById('editVanPopup');
-        const closeEditBtn = document.getElementById('closeEditVanPopup');
-        const editForm = document.getElementById('editVanForm');
-        const editVanCodeInput = document.getElementById('edit_van_code');
-        const editVinInput = document.getElementById('edit_vin');
-    
-        const editButtons = document.querySelectorAll('.edit-van-btn');
-        console.log("Found edit buttons:", editButtons.length);
-    
-        editButtons.forEach(function (btn) {
+            }
+        });
+    }
+
+    // =========================
+    // EDIT VAN POPUP
+    // =========================
+    const editPopup = document.getElementById('editVanPopup');
+    const closeEditBtn = document.getElementById('closeEditVanPopup');
+    const editForm = document.getElementById('editVanForm');
+    const editVanCodeInput = document.getElementById('edit_van_code');
+    const editVinInput = document.getElementById('edit_vin');
+
+    if (editPopup && editForm && editVanCodeInput && editVinInput) {
+        document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 const code = this.dataset.code;
-                const vin = this.dataset.vin;
+                const vin  = this.dataset.vin;
                 const editUrl = this.dataset.editUrl;
-    
-                console.log("[EDIT BTN CLICKED] code:", code, "vin:", vin, "url:", editUrl);
-    
-                if (!editPopup || !editForm) {
-                    console.error("Edit popup or form not found in DOM");
-                    return;
-                }
-    
+
                 editVanCodeInput.value = code;
                 editVinInput.value = vin;
-                editForm.setAttribute("action", editUrl);
-                editForm.setAttribute("method", "post");
-    
+                editForm.action = editUrl;
+
                 editPopup.style.display = 'block';
             });
         });
-    
-        if (closeEditBtn && editPopup) {
+
+        if (closeEditBtn) {
             closeEditBtn.addEventListener('click', function () {
                 editPopup.style.display = 'none';
             });
-    
+
             editPopup.addEventListener('click', function (e) {
                 if (e.target === editPopup) {
                     editPopup.style.display = 'none';
                 }
             });
         }
-    
-        // === DELETE VAN POPUP ===
-        const deletePopup = document.getElementById('deleteVanPopup');
-        const closeDeleteBtn = document.getElementById('closeDeleteVanPopup');
-        const deleteForm = document.getElementById('deleteVanForm');
-        const deleteMessage = document.getElementById('deleteMessage');
-        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    
-        const deleteButtons = document.querySelectorAll('.delete-van-btn');
-        console.log("Found delete buttons:", deleteButtons.length);
-    
-        deleteButtons.forEach(function (btn) {
+    }
+
+    // =========================
+    // DELETE VAN POPUP
+    // =========================
+    const deletePopup = document.getElementById('deleteVanPopup');
+    const closeDeleteBtn = document.getElementById('closeDeleteVanPopup');
+    const deleteForm = document.getElementById('deleteVanForm');
+    const deleteMessage = document.getElementById('deleteMessage');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+    if (deletePopup && deleteForm && deleteMessage && cancelDeleteBtn) {
+        document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 const code = this.dataset.code;
                 const deleteUrl = this.dataset.deleteUrl;
-    
-                console.log("[DELETE BTN CLICKED] code:", code, "url:", deleteUrl);
-    
-                if (!deletePopup || !deleteForm) {
-                    console.error("Delete popup or form not found in DOM");
-                    return;
-                }
-    
+
                 deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
-                deleteForm.setAttribute("action", deleteUrl);
-                deleteForm.setAttribute("method", "post");
-    
+                deleteForm.action = deleteUrl;
+
                 deletePopup.style.display = 'block';
             });
         });
-    
-        if (closeDeleteBtn && cancelDeleteBtn && deletePopup) {
+
+        if (closeDeleteBtn) {
             closeDeleteBtn.addEventListener('click', function () {
                 deletePopup.style.display = 'none';
             });
-    
+
             cancelDeleteBtn.addEventListener('click', function () {
                 deletePopup.style.display = 'none';
             });
-    
+
             deletePopup.addEventListener('click', function (e) {
                 if (e.target === deletePopup) {
                     deletePopup.style.display = 'none';
                 }
             });
         }
-    });
-    </script>
-    
-
+    }
+});
+</script>
 
 {% endblock %}
