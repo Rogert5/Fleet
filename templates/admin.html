@@ -30,25 +30,31 @@
                     <td class="van-code">{{ van.van_code }}</td>
                     <td class="van-vin">{{ van.vin }}</td>
                     <td>
-                        <!-- EDIT (popup via onclick) -->
+                        <!-- EDIT (popup) -->
                         <button
                             type="button"
-                            class="btn btn-sm btn-warning"
-                            onclick="openEditPopup({{ van.id }}, '{{ van.van_code }}', '{{ van.vin }}')"
+                            class="btn btn-sm btn-warning edit-van-btn"
+                            data-id="{{ van.id }}"
+                            data-code="{{ van.van_code }}"
+                            data-vin="{{ van.vin }}"
+                            data-edit-url="{{ url_for('edit_van', van_id=van.id) }}"
+                            onclick="openEditPopup(this)"
                         >
                             Edit
                         </button>
-
+                    
                         <!-- DELETE (popup) -->
                         <button
                             type="button"
                             class="btn btn-sm btn-danger delete-van-btn"
+                            data-id="{{ van.id }}"
                             data-code="{{ van.van_code }}"
                             data-delete-url="{{ url_for('delete_van', van_id=van.id) }}"
+                            onclick="openDeletePopup(this)"
                         >
                             Delete
                         </button>
-
+                    
                         <!-- HARD DELETE (no popup, direct POST) -->
                         <form method="post"
                               action="{{ url_for('delete_van', van_id=van.id) }}"
@@ -57,7 +63,7 @@
                                 Hard Delete
                             </button>
                         </form>
-                    </td>
+                    </td>                    
                 </tr>
             {% endfor %}
         </tbody>
@@ -114,143 +120,146 @@
         </form>
     </div>
 </div>
-
 <script>
-/**
- * Open the Edit popup for a van.
- * Called directly from the "Edit" button's onclick.
- */
-function openEditPopup(id, code, vin) {
-    const editPopup       = document.getElementById('editVanPopup');
-    const editForm        = document.getElementById('editVanForm');
-    const editVanCodeInput = document.getElementById('edit_van_code');
-    const editVinInput     = document.getElementById('edit_vin');
-
-    if (!editPopup || !editForm || !editVanCodeInput || !editVinInput) {
-        console.error('Edit popup elements not found');
-        return;
-    }
-
-    editVanCodeInput.value = code;
-    editVinInput.value     = vin;
-    editForm.action        = '/vans/' + id + '/edit';
-
-    editPopup.style.display = 'block';
-}
-
-document.addEventListener('DOMContentLoaded', function () {
     // =========================
     // SEARCH BAR
     // =========================
-    const searchBar = document.getElementById('searchBar');
-    const vanTable  = document.getElementById('vanTable');
-
-    if (searchBar && vanTable) {
-        searchBar.addEventListener('input', function() {
-            const query = this.value.toUpperCase();
-            const tbody = vanTable.getElementsByTagName('tbody')[0];
-            if (!tbody) return;
-            const rows  = tbody.getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const cols = rows[i].getElementsByTagName('td');
-                let rowMatchesQuery = false;
-                const columnsToCheck = [0, 1]; // Van + VIN
-
-                for (let j = 0; j < columnsToCheck.length; j++) {
-                    const cell = cols[columnsToCheck[j]];
-                    if (!cell) continue;
-                    const cellText = cell.innerText.toUpperCase();
-                    if (cellText.includes(query)) {
-                        rowMatchesQuery = true;
-                        break;
-                    }
+    function filterVans() {
+        const searchBar = document.getElementById('searchBar');
+        if (!searchBar) return;
+    
+        const query = searchBar.value.toUpperCase();
+        const rows = document
+            .getElementById('vanTable')
+            .getElementsByTagName('tbody')[0]
+            .getElementsByTagName('tr');
+    
+        for (let i = 0; i < rows.length; i++) {
+            const cols = rows[i].getElementsByTagName('td');
+            let rowMatchesQuery = false;
+            const columnsToCheck = [0, 1]; // Van + VIN
+    
+            for (let j = 0; j < columnsToCheck.length; j++) {
+                const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                if (cellText.includes(query)) {
+                    rowMatchesQuery = true;
+                    break;
                 }
-                rows[i].style.display = rowMatchesQuery ? '' : 'none';
             }
-        });
+            rows[i].style.display = rowMatchesQuery ? '' : 'none';
+        }
     }
-
-    // =========================
-    // ADD VAN POPUP
-    // =========================
-    const openAddBtn  = document.getElementById('openAddVanPopup');
-    const addPopup    = document.getElementById('addVanPopup');
-    const closeAddBtn = document.getElementById('closeAddVanPopup');
-
-    if (openAddBtn && addPopup && closeAddBtn) {
-        openAddBtn.addEventListener('click', function () {
-            addPopup.style.display = 'block';
-        });
-
-        closeAddBtn.addEventListener('click', function () {
-            addPopup.style.display = 'none';
-        });
-
-        addPopup.addEventListener('click', function (e) {
-            if (e.target === addPopup) {
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchBar = document.getElementById('searchBar');
+        if (searchBar) {
+            searchBar.addEventListener('input', filterVans);
+        }
+    
+        // ADD VAN POPUP
+        const openAddBtn  = document.getElementById('openAddVanPopup');
+        const addPopup    = document.getElementById('addVanPopup');
+        const closeAddBtn = document.getElementById('closeAddVanPopup');
+    
+        if (openAddBtn && addPopup && closeAddBtn) {
+            openAddBtn.addEventListener('click', function () {
+                addPopup.style.display = 'block';
+            });
+    
+            closeAddBtn.addEventListener('click', function () {
                 addPopup.style.display = 'none';
-            }
-        });
-    }
-
-    // =========================
-    // CLOSE EDIT VAN POPUP
-    // =========================
-    const editPopup    = document.getElementById('editVanPopup');
-    const closeEditBtn = document.getElementById('closeEditVanPopup');
-
-    if (editPopup && closeEditBtn) {
-        closeEditBtn.addEventListener('click', function () {
-            editPopup.style.display = 'none';
-        });
-
-        editPopup.addEventListener('click', function (e) {
-            if (e.target === editPopup) {
-                editPopup.style.display = 'none';
-            }
-        });
-    }
-
-    // =========================
-    // DELETE VAN POPUP
-    // =========================
-    const deletePopup     = document.getElementById('deleteVanPopup');
-    const closeDeleteBtn  = document.getElementById('closeDeleteVanPopup');
-    const deleteForm      = document.getElementById('deleteVanForm');
-    const deleteMessage   = document.getElementById('deleteMessage');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-
-    if (deletePopup && deleteForm && deleteMessage && cancelDeleteBtn) {
-        document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const code      = this.dataset.code;
-                const deleteUrl = this.dataset.deleteUrl;
-
-                deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
-                deleteForm.action = deleteUrl;
-
-                deletePopup.style.display = 'block';
             });
-        });
-
-        if (closeDeleteBtn) {
-            closeDeleteBtn.addEventListener('click', function () {
-                deletePopup.style.display = 'none';
-            });
-
-            cancelDeleteBtn.addEventListener('click', function () {
-                deletePopup.style.display = 'none';
-            });
-
-            deletePopup.addEventListener('click', function (e) {
-                if (e.target === deletePopup) {
-                    deletePopup.style.display = 'none';
+    
+            addPopup.addEventListener('click', function (e) {
+                if (e.target === addPopup) {
+                    addPopup.style.display = 'none';
                 }
             });
         }
+    });
+    
+    // =========================
+    // EDIT VAN POPUP (global)
+    // =========================
+    function openEditPopup(button) {
+        console.log('Edit clicked', button.dataset); // shows in console
+    
+        const editPopup       = document.getElementById('editVanPopup');
+        const editForm        = document.getElementById('editVanForm');
+        const editVanCodeInput = document.getElementById('edit_van_code');
+        const editVinInput     = document.getElementById('edit_vin');
+        const closeEditBtn     = document.getElementById('closeEditVanPopup');
+    
+        if (!editPopup || !editForm || !editVanCodeInput || !editVinInput) {
+            console.error('Edit popup elements not found');
+            return;
+        }
+    
+        const code    = button.dataset.code;
+        const vin     = button.dataset.vin;
+        const editUrl = button.dataset.editUrl;
+    
+        editVanCodeInput.value = code;
+        editVinInput.value     = vin;
+        editForm.action        = editUrl;
+    
+        editPopup.style.display = 'block';
+    
+        if (closeEditBtn) {
+            closeEditBtn.onclick = function () {
+                editPopup.style.display = 'none';
+            };
+        }
+    
+        editPopup.onclick = function (e) {
+            if (e.target === editPopup) {
+                editPopup.style.display = 'none';
+            }
+        };
     }
-});
-</script>
+    
+    // =========================
+    // DELETE VAN POPUP (global)
+    // =========================
+    function openDeletePopup(button) {
+        console.log('Delete clicked', button.dataset); // shows in console
+    
+        const deletePopup     = document.getElementById('deleteVanPopup');
+        const deleteForm      = document.getElementById('deleteVanForm');
+        const deleteMessage   = document.getElementById('deleteMessage');
+        const closeDeleteBtn  = document.getElementById('closeDeleteVanPopup');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    
+        if (!deletePopup || !deleteForm || !deleteMessage || !cancelDeleteBtn) {
+            console.error('Delete popup elements not found');
+            return;
+        }
+    
+        const code      = button.dataset.code;
+        const deleteUrl = button.dataset.deleteUrl;
+    
+        deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
+        deleteForm.action         = deleteUrl;
+    
+        deletePopup.style.display = 'block';
+    
+        if (closeDeleteBtn) {
+            closeDeleteBtn.onclick = function () {
+                deletePopup.style.display = 'none';
+            };
+        }
+    
+        cancelDeleteBtn.onclick = function () {
+            deletePopup.style.display = 'none';
+        };
+    
+        deletePopup.onclick = function (e) {
+            if (e.target === deletePopup) {
+                deletePopup.style.display = 'none';
+            }
+        };
+    }
+    </script>
+    
 
 {% endblock %}
