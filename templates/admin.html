@@ -127,128 +127,148 @@
 </div>
 
 <script>
-    // === SEARCH BAR (keep as-is) ===
-    document.getElementById('searchBar').addEventListener('input', function() {
-        var query = this.value.toUpperCase();
-        var rows = document.getElementById('vanTable')
-            .getElementsByTagName('tbody')[0]
-            .getElementsByTagName('tr');
-
-        for (var i = 0; i < rows.length; i++) {
-            var cols = rows[i].getElementsByTagName('td');
-            var rowMatchesQuery = false;
-            var columnsToCheck = [0, 1]; // Van + VIN
-
-            for (var j = 0; j < columnsToCheck.length; j++) {
-                var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-                if (cellText.includes(query)) {
-                    rowMatchesQuery = true;
-                    break;
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("Admin JS loaded");
+    
+        // === SEARCH BAR ===
+        const searchBar = document.getElementById('searchBar');
+        if (searchBar) {
+            searchBar.addEventListener('input', function () {
+                var query = this.value.toUpperCase();
+                var rows = document.getElementById('vanTable')
+                    .getElementsByTagName('tbody')[0]
+                    .getElementsByTagName('tr');
+    
+                for (var i = 0; i < rows.length; i++) {
+                    var cols = rows[i].getElementsByTagName('td');
+                    var rowMatchesQuery = false;
+                    var columnsToCheck = [0, 1]; // Van + VIN
+    
+                    for (var j = 0; j < columnsToCheck.length; j++) {
+                        var cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                        if (cellText.includes(query)) {
+                            rowMatchesQuery = true;
+                            break;
+                        }
+                    }
+                    rows[i].style.display = rowMatchesQuery ? '' : 'none';
                 }
-            }
-            rows[i].style.display = rowMatchesQuery ? '' : 'none';
+            });
+        }
+    
+        // === ADD VAN POPUP ===
+        const openAddBtn = document.getElementById('openAddVanPopup');
+        const addPopup = document.getElementById('addVanPopup');
+        const closeAddBtn = document.getElementById('closeAddVanPopup');
+    
+        if (openAddBtn && addPopup && closeAddBtn) {
+            openAddBtn.addEventListener('click', function () {
+                addPopup.style.display = 'block';
+            });
+    
+            closeAddBtn.addEventListener('click', function () {
+                addPopup.style.display = 'none';
+            });
+    
+            addPopup.addEventListener('click', function (e) {
+                if (e.target === addPopup) {
+                    addPopup.style.display = 'none';
+                }
+            });
+        }
+    
+        // === EDIT VAN POPUP ===
+        const editPopup = document.getElementById('editVanPopup');
+        const closeEditBtn = document.getElementById('closeEditVanPopup');
+        const editForm = document.getElementById('editVanForm');
+        const editVanCodeInput = document.getElementById('edit_van_code');
+        const editVinInput = document.getElementById('edit_vin');
+    
+        const editButtons = document.querySelectorAll('.edit-van-btn');
+        console.log("Found edit buttons:", editButtons.length);
+    
+        editButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const code = this.dataset.code;
+                const vin = this.dataset.vin;
+                const editUrl = this.dataset.editUrl;
+    
+                console.log("[EDIT BTN CLICKED] code:", code, "vin:", vin, "url:", editUrl);
+    
+                if (!editPopup || !editForm) {
+                    console.error("Edit popup or form not found in DOM");
+                    return;
+                }
+    
+                editVanCodeInput.value = code;
+                editVinInput.value = vin;
+                editForm.setAttribute("action", editUrl);
+                editForm.setAttribute("method", "post");
+    
+                editPopup.style.display = 'block';
+            });
+        });
+    
+        if (closeEditBtn && editPopup) {
+            closeEditBtn.addEventListener('click', function () {
+                editPopup.style.display = 'none';
+            });
+    
+            editPopup.addEventListener('click', function (e) {
+                if (e.target === editPopup) {
+                    editPopup.style.display = 'none';
+                }
+            });
+        }
+    
+        // === DELETE VAN POPUP ===
+        const deletePopup = document.getElementById('deleteVanPopup');
+        const closeDeleteBtn = document.getElementById('closeDeleteVanPopup');
+        const deleteForm = document.getElementById('deleteVanForm');
+        const deleteMessage = document.getElementById('deleteMessage');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    
+        const deleteButtons = document.querySelectorAll('.delete-van-btn');
+        console.log("Found delete buttons:", deleteButtons.length);
+    
+        deleteButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const code = this.dataset.code;
+                const deleteUrl = this.dataset.deleteUrl;
+    
+                console.log("[DELETE BTN CLICKED] code:", code, "url:", deleteUrl);
+    
+                if (!deletePopup || !deleteForm) {
+                    console.error("Delete popup or form not found in DOM");
+                    return;
+                }
+    
+                deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
+                deleteForm.setAttribute("action", deleteUrl);
+                deleteForm.setAttribute("method", "post");
+    
+                deletePopup.style.display = 'block';
+            });
+        });
+    
+        if (closeDeleteBtn && cancelDeleteBtn && deletePopup) {
+            closeDeleteBtn.addEventListener('click', function () {
+                deletePopup.style.display = 'none';
+            });
+    
+            cancelDeleteBtn.addEventListener('click', function () {
+                deletePopup.style.display = 'none';
+            });
+    
+            deletePopup.addEventListener('click', function (e) {
+                if (e.target === deletePopup) {
+                    deletePopup.style.display = 'none';
+                }
+            });
         }
     });
-
-    // === ADD VAN POPUP (your original code is fine) ===
-    const openAddBtn = document.getElementById('openAddVanPopup');
-    const addPopup = document.getElementById('addVanPopup');
-    const closeAddBtn = document.getElementById('closeAddVanPopup');
-
-    if (openAddBtn && addPopup && closeAddBtn) {
-        openAddBtn.addEventListener('click', function () {
-            addPopup.style.display = 'block';
-        });
-
-        closeAddBtn.addEventListener('click', function () {
-            addPopup.style.display = 'none';
-        });
-
-        addPopup.addEventListener('click', function (e) {
-            if (e.target === addPopup) {
-                addPopup.style.display = 'none';
-            }
-        });
-    }
-
-    // === EDIT VAN POPUP ===
-    const editPopup = document.getElementById('editVanPopup');
-    const closeEditBtn = document.getElementById('closeEditVanPopup');
-    const editForm = document.getElementById('editVanForm');
-    const editVanCodeInput = document.getElementById('edit_van_code');
-    const editVinInput = document.getElementById('edit_vin');
-
-    document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const code = this.dataset.code;
-            const vin = this.dataset.vin;
-            const editUrl = this.dataset.editUrl;
-
-            console.log("[EDIT BTN] code:", code, "vin:", vin, "url:", editUrl);
-
-            editVanCodeInput.value = code;
-            editVinInput.value = vin;
-
-            // Make sure the form posts to /vans/<id>/edit
-            editForm.setAttribute("action", editUrl);
-            editForm.setAttribute("method", "post");
-
-            editPopup.style.display = 'block';
-        });
-    });
-
-    if (closeEditBtn) {
-        closeEditBtn.addEventListener('click', function () {
-            editPopup.style.display = 'none';
-        });
-
-        editPopup.addEventListener('click', function (e) {
-            if (e.target === editPopup) {
-                editPopup.style.display = 'none';
-            }
-        });
-    }
-
-    // === DELETE VAN POPUP ===
-    const deletePopup = document.getElementById('deleteVanPopup');
-    const closeDeleteBtn = document.getElementById('closeDeleteVanPopup');
-    const deleteForm = document.getElementById('deleteVanForm');
-    const deleteMessage = document.getElementById('deleteMessage');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-
-    document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const code = this.dataset.code;
-            const deleteUrl = this.dataset.deleteUrl;
-
-            console.log("[DELETE BTN] code:", code, "url:", deleteUrl);
-
-            deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
-
-            // Make sure the form posts to /vans/<id>/delete
-            deleteForm.setAttribute("action", deleteUrl);
-            deleteForm.setAttribute("method", "post");
-
-            deletePopup.style.display = 'block';
-        });
-    });
-
-    if (closeDeleteBtn && cancelDeleteBtn) {
-        closeDeleteBtn.addEventListener('click', function () {
-            deletePopup.style.display = 'none';
-        });
-
-        cancelDeleteBtn.addEventListener('click', function () {
-            deletePopup.style.display = 'none';
-        });
-
-        deletePopup.addEventListener('click', function (e) {
-            if (e.target === deletePopup) {
-                deletePopup.style.display = 'none';
-            }
-        });
-    }
-</script>
+    </script>
+    
 
 
 {% endblock %}
