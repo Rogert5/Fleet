@@ -97,364 +97,356 @@
     </div>
 </div>
 
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // Make all current vans available to JS
-    const existingVans = [
-        {% for van in vans %}
-        { id: {{ van.id }}, code: "{{ van.van_code }}", vin: "{{ van.vin }}" }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
+// Make all current vans available to JS
+const existingVans = [
+    {% for van in vans %}
+    { id: {{ van.id }}, code: "{{ van.van_code }}", vin: "{{ van.vin }}" }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
 
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
 
-        // Keep track of original values for the Edit popup
-        let originalCode = '';
-        let originalVin  = '';
+    // Keep track of original values for the Edit popup
+    let originalCode = '';
+    let originalVin  = '';
 
-        // =========================
-        // SEARCH BAR
-        // =========================
-        const searchBar = document.getElementById('searchBar');
-        if (searchBar) {
-            searchBar.addEventListener('input', function () {
-                const query = this.value.toUpperCase();
-                const rows = document
-                    .getElementById('vanTable')
-                    .getElementsByTagName('tbody')[0]
-                    .getElementsByTagName('tr');
+    // =========================
+    // SEARCH BAR
+    // =========================
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.addEventListener('input', function () {
+            const query = this.value.toUpperCase();
+            const rows = document
+                .getElementById('vanTable')
+                .getElementsByTagName('tbody')[0]
+                .getElementsByTagName('tr');
 
-                for (let i = 0; i < rows.length; i++) {
-                    const cols = rows[i].getElementsByTagName('td');
-                    let rowMatchesQuery = false;
-                    const columnsToCheck = [0, 1]; // Van + VIN
+            for (let i = 0; i < rows.length; i++) {
+                const cols = rows[i].getElementsByTagName('td');
+                let rowMatchesQuery = false;
+                const columnsToCheck = [0, 1]; // Van + VIN
 
-                    for (let j = 0; j < columnsToCheck.length; j++) {
-                        const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-                        if (cellText.includes(query)) {
-                            rowMatchesQuery = true;
-                            break;
-                        }
+                for (let j = 0; j < columnsToCheck.length; j++) {
+                    const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                    if (cellText.includes(query)) {
+                        rowMatchesQuery = true;
+                        break;
                     }
-                    rows[i].style.display = rowMatchesQuery ? '' : 'none';
                 }
-            });
-        }
+                rows[i].style.display = rowMatchesQuery ? '' : 'none';
+            }
+        });
+    }
 
-        // =========================
-        // ADD VAN POPUP + PREFIX CHECK + CONFLICT CHECK
-        // =========================
-        const openAddBtn  = document.getElementById('openAddVanPopup');
-        const addPopup    = document.getElementById('addVanPopup');
-        const closeAddBtn = document.getElementById('closeAddVanPopup');
+    // =========================
+    // ADD VAN POPUP + PREFIX + CONFLICT CHECK
+    // =========================
+    const openAddBtn  = document.getElementById('openAddVanPopup');
+    const addPopup    = document.getElementById('addVanPopup');
+    const closeAddBtn = document.getElementById('closeAddVanPopup');
 
-        const addVanForm       = document.getElementById('addVanForm');
-        const addVanCodeInput  = document.getElementById('van_code');
-        const addVinInput      = document.getElementById('vin');
+    const addVanForm       = document.getElementById('addVanForm');
+    const addVanCodeInput  = document.getElementById('van_code');
+    const addVinInput      = document.getElementById('vin');
 
-        if (openAddBtn && addPopup && closeAddBtn) {
-            openAddBtn.addEventListener('click', function () {
-                addPopup.style.display = 'block';
-            });
+    if (openAddBtn && addPopup && closeAddBtn) {
+        openAddBtn.addEventListener('click', function () {
+            addPopup.style.display = 'block';
+        });
 
-            closeAddBtn.addEventListener('click', function () {
+        closeAddBtn.addEventListener('click', function () {
+            addPopup.style.display = 'none';
+        });
+
+        addPopup.addEventListener('click', function (e) {
+            if (e.target === addPopup) {
                 addPopup.style.display = 'none';
-            });
+            }
+        });
+    }
 
-            addPopup.addEventListener('click', function (e) {
-                if (e.target === addPopup) {
-                    addPopup.style.display = 'none';
-                }
-            });
-        }
+    if (addVanForm && addVanCodeInput && addVinInput) {
+        addVanForm.addEventListener('submit', function (e) {
+            e.preventDefault();
 
-        if (addVanForm && addVanCodeInput && addVinInput) {
-            addVanForm.addEventListener('submit', function (e) {
-                e.preventDefault();
+            let vanCode = addVanCodeInput.value.trim().toUpperCase();
+            let vin     = addVinInput.value.trim().toUpperCase();
 
-                let vanCode = addVanCodeInput.value.trim().toUpperCase();
-                let vin     = addVinInput.value.trim().toUpperCase();
-
-                if (!vanCode || !vin) {
-                    addVanForm.submit();
-                    return;
-                }
-
-                // ---------- PREFIX VALIDATION ----------
-                const prefix = vanCode.charAt(0);
-                const number = vanCode.substring(1);
-                const validPrefix = ['G', 'H', 'L'];
-
-                // Prefix invalid → suggest alternatives
-                if (!validPrefix.includes(prefix)) {
-
-                    // If numeric part is junk, show simple error
-                    if (!/^\d+$/.test(number)) {
-                        Swal.fire({
-                            title: 'Invalid Van Number',
-                            text: 'Van must start with G, H, or L followed by a number (e.g., G5).',
-                            icon: 'error'
-                        });
-                        return;
-                    }
-
-                    Swal.fire({
-                        title: 'Invalid Van Prefix',
-                        html: `
-                            <p>The van <strong>${vanCode}</strong> is not valid.</p>
-                            <p>Did you mean one of these?</p>
-                        `,
-                        showCloseButton: true,
-                        closeButtonHtml: '<span style="color:red; font-size:1.6rem;">✖</span>',
-                        showCancelButton: true,
-                        showDenyButton: true,
-                        showConfirmButton: true,
-                        confirmButtonText: `G${number}`,
-                        denyButtonText: `H${number}`,
-                        cancelButtonText: `L${number}`,
-                        confirmButtonColor: '#007bff',
-                        denyButtonColor: '#007bff',
-                        cancelButtonColor: '#007bff',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            addVanCodeInput.value = `G${number}`;
-                            addVanForm.requestSubmit(); // re-run submit handler
-                        } else if (result.isDenied) {
-                            addVanCodeInput.value = `H${number}`;
-                            addVanForm.requestSubmit();
-                        } else if (result.dismiss === Swal.DismissReason.cancel) {
-                            addVanCodeInput.value = `L${number}`;
-                            addVanForm.requestSubmit();
-                        }
-                    });
-
-                    return; // stop current submit path
-                }
-
-                // ---------- CONFLICT CHECKS ----------
-                vanCode = addVanCodeInput.value.trim().toUpperCase(); // in case we changed it above
-
-                const sameCode = existingVans.find(v => v.code === vanCode);
-                const sameVin  = existingVans.find(v => v.vin === vin);
-
-                // CASE 1: same van code exists → offer "merge to new VIN"
-                if (sameCode) {
-                    Swal.fire({
-                        title: 'Van Already Exists',
-                        html: `
-                            <div style="text-align:left;">
-                                <p><strong>Van:</strong> ${vanCode}</p>
-                                <hr>
-                                <p><strong>Existing VIN:</strong> ${sameCode.vin}</p>
-                                <p><strong>New VIN:</strong> ${vin}</p>
-                                <p style="margin-top:10px;font-size:0.9rem;color:#555;">
-                                    If you continue, the existing van's VIN will be updated
-                                    to the new value. You can always EDIT it later.
-                                </p>
-                            </div>
-                        `,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Merge to new VIN',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#b00000'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            fetch(`/vans/${sameCode.id}/edit`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: new URLSearchParams({
-                                    van_code: vanCode,
-                                    vin: vin
-                                })
-                            })
-                            .then(resp => {
-                                if (!resp.ok) throw new Error('Network error');
-                                window.location.reload();
-                            })
-                            .catch(err => {
-                                console.error(err);
-                                Swal.fire('Error', 'Could not update van. Please try again.', 'error');
-                            });
-                        }
-                    });
-
-                    return;
-                }
-
-                // CASE 2: VIN already used by a different van → warn but allow
-                if (sameVin) {
-                    Swal.fire({
-                        title: 'VIN Conflict',
-                        html: `
-                            <div style="text-align:left;">
-                                <p>The VIN <strong>${vin}</strong> is already assigned.</p>
-                                <p><strong>Existing van:</strong> ${sameVin.code}</p>
-                                <p><strong>New van:</strong> ${vanCode}</p>
-                                <p style="margin-top:10px;font-size:0.9rem;color:#555;">
-                                    This will create two vans with the same VIN.
-                                    You can EDIT or DELETE one later.
-                                </p>
-                            </div>
-                        `,
-                        icon: 'info',
-                        showCancelButton: true,
-                        confirmButtonText: 'Continue & Add',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#007bff'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            addVanForm.submit();
-                        }
-                    });
-
-                    return;
-                }
-
-                // CASE 3: no conflicts → just submit normally
+            if (!vanCode || !vin) {
                 addVanForm.submit();
-            });
-        }
-
-        // =========================
-        // EDIT VAN POPUP 
-        // =========================
-        const editPopup        = document.getElementById('editVanPopup');
-        const closeEditBtn     = document.getElementById('closeEditVanPopup');
-        const editForm         = document.getElementById('editVanForm');
-        const editVanCodeInput = document.getElementById('edit_van_code');
-        const editVinInput     = document.getElementById('edit_vin');
-
-        if (editPopup && editForm && editVanCodeInput && editVinInput) {
-            document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    const code = this.dataset.code;
-                    const vin  = this.dataset.vin;
-                    const editUrl = this.dataset.editUrl;
-
-                    originalCode = code;
-                    originalVin  = vin;
-
-                    editVanCodeInput.value = code;
-                    editVinInput.value = vin;
-                    editForm.action = editUrl;
-
-                    editPopup.style.display = 'block';
-                });
-            });
-
-            if (closeEditBtn) {
-                closeEditBtn.addEventListener('click', function () {
-                    editPopup.style.display = 'none';
-                });
-
-                editPopup.addEventListener('click', function (e) {
-                    if (e.target === editPopup) {
-                        editPopup.style.display = 'none';
-                    }
-                });
+                return;
             }
 
-            editForm.addEventListener('submit', function (e) {
-                e.preventDefault();
+            // ----- PREFIX VALIDATION (G/H/L) -----
+            const prefix = vanCode.charAt(0);
+            const number = vanCode.substring(1);
+            const validPrefix = ['G', 'H', 'L'];
 
-                const newCode = editVanCodeInput.value.trim().toUpperCase();
-                const newVin  = editVinInput.value.trim().toUpperCase();
+            if (!validPrefix.includes(prefix)) {
 
-                if (newCode === originalCode && newVin === originalVin) {
-                    this.submit();
+                // numeric part must be valid
+                if (!/^\d+$/.test(number)) {
+                    Swal.fire({
+                        title: 'Invalid Van Number',
+                        text: 'Van must start with G, H, or L followed by a number (e.g., G5).',
+                        icon: 'error'
+                    });
                     return;
                 }
 
                 Swal.fire({
-                    title: 'Confirm Edit',
+                    title: 'Invalid Van Prefix',
+                    html: `
+                        <p>The van <strong>${vanCode}</strong> is not valid.</p>
+                        <p>Did you mean one of these?</p>
+                    `,
+                    showCloseButton: true,
+                    closeButtonHtml: '<span style="color:red; font-size:1.6rem;">✖</span>',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    showConfirmButton: true,
+                    confirmButtonText: `G${number}`,
+                    denyButtonText: `H${number}`,
+                    cancelButtonText: `L${number}`,
+                    confirmButtonColor: '#007bff',
+                    denyButtonColor: '#007bff',
+                    cancelButtonColor: '#007bff',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        addVanCodeInput.value = `G${number}`;
+                        addVanForm.submit();
+                    } else if (result.isDenied) {
+                        addVanCodeInput.value = `H${number}`;
+                        addVanForm.submit();
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        addVanCodeInput.value = `L${number}`;
+                        addVanForm.submit();
+                    }
+                });
+
+                return; // stop here; we’ll resubmit after user chooses
+            }
+
+            // ----- CONFLICT CHECKS -----
+            const sameCode = existingVans.find(v => v.code === vanCode);
+            const sameVin  = existingVans.find(v => v.vin === vin);
+
+            // CASE 1: same van code exists → offer "merge to new VIN"
+            if (sameCode) {
+                Swal.fire({
+                    title: 'Van Already Exists',
                     html: `
                         <div style="text-align:left;">
-                            <p><strong>Van (old):</strong> ${originalCode}</p>
-                            <p><strong>Van (new):</strong> ${newCode}</p>
+                            <p><strong>Van:</strong> ${vanCode}</p>
                             <hr>
-                            <p><strong>VIN (old):</strong> ${originalVin}</p>
-                            <p><strong>VIN (new):</strong> ${newVin}</p>
+                            <p><strong>Existing VIN:</strong> ${sameCode.vin}</p>
+                            <p><strong>New VIN:</strong> ${vin}</p>
+                            <p style="margin-top:10px;font-size:0.9rem;color:#555;">
+                                If you continue, the existing van's VIN will be updated
+                                to the new value. You can always EDIT it later.
+                            </p>
                         </div>
                     `,
-                    icon: 'question',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Save Changes',
+                    confirmButtonText: 'Merge to new VIN',
                     cancelButtonText: 'Cancel',
                     confirmButtonColor: '#b00000'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        editForm.submit();
-                    }
-                });
-            });
-        }
-
-        // =========================
-        // DELETE VAN (SweetAlert confirm + success)
-        // =========================
-        document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const row       = this.closest('tr');
-                const code      = this.dataset.code;
-                const deleteUrl = this.dataset.deleteUrl;
-
-                Swal.fire({
-                    title: 'Delete Van',
-                    html: 'Are you sure you want to delete van <strong>' + code + '</strong>?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#d33'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(deleteUrl, {
-                            method: 'POST'
+                        fetch(`/vans/${sameCode.id}/edit`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams({
+                                van_code: vanCode,
+                                vin: vin
+                            })
                         })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-
-                            if (row) {
-                                row.remove();
-                            }
-
-                            Swal.fire({
-                                title: '<span style="font-size: 2.5rem; display:block; margin-bottom: 10px;">🗑</span>Van Deleted',
-                                html: 'Van <strong>' + code + '</strong> has been removed.',
-                                background: '#ffffff',
-                                color: '#000000',
-                                confirmButtonColor: '#b00000',
-                                confirmButtonText: 'Close'
-                            });
+                        .then(resp => {
+                            if (!resp.ok) throw new Error('Network error');
+                            window.location.reload();
                         })
-                        .catch(error => {
-                            console.error('Error deleting van:', error);
-                            Swal.fire({
-                                title: 'Error',
-                                text: 'There was a problem deleting this van. Please try again.',
-                                icon: 'error',
-                                confirmButtonText: 'Close'
-                            });
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Could not update van. Please try again.', 'error');
                         });
                     }
                 });
+
+                return;
+            }
+
+            // CASE 2: VIN already used by a different van → warn but allow
+            if (sameVin) {
+                Swal.fire({
+                    title: 'VIN Conflict',
+                    html: `
+                        <div style="text-align:left;">
+                            <p>The VIN <strong>${vin}</strong> is already assigned.</p>
+                            <p><strong>Existing van:</strong> ${sameVin.code}</p>
+                            <p><strong>New van:</strong> ${vanCode}</p>
+                            <p style="margin-top:10px;font-size:0.9rem;color:#555;">
+                                This will create two vans with the same VIN.
+                                You can EDIT or DELETE one later.
+                            </p>
+                        </div>
+                    `,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Continue & Add',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#007bff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        addVanForm.submit();
+                    }
+                });
+
+                return;
+            }
+
+            // CASE 3: no conflicts → just submit normally
+            addVanForm.submit();
+        });
+    }
+
+    // =========================
+    // EDIT VAN POPUP 
+    // =========================
+    const editPopup        = document.getElementById('editVanPopup');
+    const closeEditBtn     = document.getElementById('closeEditVanPopup');
+    const editForm         = document.getElementById('editVanForm');
+    const editVanCodeInput = document.getElementById('edit_van_code');
+    const editVinInput     = document.getElementById('edit_vin');
+
+    if (editPopup && editForm && editVanCodeInput && editVinInput) {
+        document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const code = this.dataset.code;
+                const vin  = this.dataset.vin;
+                const editUrl = this.dataset.editUrl;
+
+                originalCode = code;
+                originalVin  = vin;
+
+                editVanCodeInput.value = code;
+                editVinInput.value = vin;
+                editForm.action = editUrl;
+
+                editPopup.style.display = 'block';
             });
         });
 
+        if (closeEditBtn) {
+            closeEditBtn.addEventListener('click', function () {
+                editPopup.style.display = 'none';
+            });
+
+            editPopup.addEventListener('click', function (e) {
+                if (e.target === editPopup) {
+                    editPopup.style.display = 'none';
+                }
+            });
+        }
+
+        editForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const newCode = editVanCodeInput.value.trim().toUpperCase();
+            const newVin  = editVinInput.value.trim().toUpperCase();
+
+            if (newCode === originalCode && newVin === originalVin) {
+                this.submit();
+                return;
+            }
+
+            Swal.fire({
+                title: 'Confirm Edit',
+                html: `
+                    <div style="text-align:left;">
+                        <p><strong>Van (old):</strong> ${originalCode}</p>
+                        <p><strong>Van (new):</strong> ${newCode}</p>
+                        <hr>
+                        <p><strong>VIN (old):</strong> ${originalVin}</p>
+                        <p><strong>VIN (new):</strong> ${newVin}</p>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Save Changes',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#b00000'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    editForm.submit();
+                }
+            });
+        });
+    }
+
+    // =========================
+    // DELETE VAN (SweetAlert confirm + success)
+    // =========================
+    document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const row       = this.closest('tr');
+            const code      = this.dataset.code;
+            const deleteUrl = this.dataset.deleteUrl;
+
+            Swal.fire({
+                title: 'Delete Van',
+                html: 'Are you sure you want to delete van <strong>' + code + '</strong>?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(deleteUrl, {
+                        method: 'POST'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+
+                        if (row) {
+                            row.remove();
+                        }
+
+                        Swal.fire({
+                            title: '<span style="font-size: 2.5rem; display:block; margin-bottom: 10px;">🗑</span>Van Deleted',
+                            html: 'Van <strong>' + code + '</strong> has been removed.',
+                            background: '#ffffff',
+                            color: '#000000',
+                            confirmButtonColor: '#b00000',
+                            confirmButtonText: 'Close'
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error deleting van:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'There was a problem deleting this van. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'Close'
+                        });
+                    });
+                }
+            });
+        });
     });
+
+});
 </script>
 
-    
 {% endblock %}
 
