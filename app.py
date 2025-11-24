@@ -113,7 +113,9 @@ class Note(db.Model):
 class Van(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     van_code = db.Column(db.String(), nullable=False, unique=True)
-    vin = db.Column(db.String(), nullable=False, unique=True)
+    # VIN can repeat now; JS will warn, but DB will allow it
+    vin = db.Column(db.String(), nullable=False)
+
 
 
 # Create tables and seed vans
@@ -284,25 +286,42 @@ def admin():
             flash("Van must be like G1–G58, H1–H58, or L1–L58.")
             return redirect("/admin")
 
-        # Check for duplicate van_code
+        # Still keep van_code unique (JS also merges for this case)
         existing_code = Van.query.filter_by(van_code=van_code).first()
         if existing_code:
             flash(f"Van {van_code} already exists.")
             return redirect("/admin")
 
-        # 🔹 Check for duplicate VIN
-        existing_vin = Van.query.filter_by(vin=vin).first()
-        if existing_vin:
-            flash(f"VIN {vin} is already assigned to another van.")
-            return redirect("/admin")
+        # NOTE: we no longer block duplicate VINs here; JS shows a conflict
+        # but we let the DB accept multiple rows with the same VIN.
 
-        # 🔹 Actually create and save the new van
         new_van = Van(van_code=van_code, vin=vin)
         db.session.add(new_van)
         db.session.commit()
 
         flash(f"Van {van_code} added successfully.")
         return redirect("/admin")
+
+    # GET request: show the admin page with sorted vans
+    vans = Van.query.all()
+
+    def van_sort_key(v):
+        code = (v.van_code or "").upper().strip()
+        prefix_order = {"G": 1, "H": 2, "L": 3}
+        group = 99
+        num = 9999
+        if code:
+            prefix = code[0]
+            group = prefix_order.get(prefix, 98)
+            try:
+                num = int(code[1:])
+            except ValueError:
+                num = 9999
+        return (group, num)
+
+    vans = sorted(vans, key=van_sort_key)
+    return render_template("admin.html", vans=vans)
+
 
     # GET request: show the admin page with sorted vans
     vans = Van.query.all()
@@ -342,7 +361,7 @@ def edit_van(van_id):
         flash("Van must be like G1–G58, H1–H58, or L1–L58.")
         return redirect("/admin")
 
-    # Check for duplicate van_code (exclude this van)
+    # Keep van_code unique (excluding this van)
     existing_code = Van.query.filter(
         Van.id != van_id,
         Van.van_code == new_code
@@ -351,22 +370,15 @@ def edit_van(van_id):
         flash(f"Van {new_code} already exists.")
         return redirect("/admin")
 
-    # Check for duplicate VIN (exclude this van)
-    existing_vin = Van.query.filter(
-        Van.id != van_id,
-        Van.vin == new_vin
-    ).first()
-    if existing_vin:
-        flash(f"VIN {new_vin} is already assigned to another van.")
-        return redirect("/admin")
+    # We no longer block duplicate VINs here either; JS warns but allows it.
 
-    # Apply updates
     van.van_code = new_code
     van.vin = new_vin
     db.session.commit()
 
     flash(f"Van updated to {new_code}.")
     return redirect("/admin")
+
 
 @app.route("/vans/<int:van_id>/delete", methods=["POST"])
 def delete_van(van_id):
