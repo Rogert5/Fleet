@@ -38,23 +38,21 @@
                             data-code="{{ van.van_code }}"
                             data-vin="{{ van.vin }}"
                             data-edit-url="{{ url_for('edit_van', van_id=van.id) }}"
-                            onclick="openEditPopup(this)"
                         >
                             Edit
                         </button>
-                    
-                        <!-- DELETE (popup) -->
+
+                        <!-- DELETE (SweetAlert confirm) -->
                         <button
                             type="button"
                             class="btn btn-sm btn-danger delete-van-btn"
                             data-id="{{ van.id }}"
                             data-code="{{ van.van_code }}"
                             data-delete-url="{{ url_for('delete_van', van_id=van.id) }}"
-                            onclick="openDeletePopup(this)"
                         >
                             Delete
                         </button>
-                    </td>                    
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -99,158 +97,158 @@
     </div>
 </div>
 
-<!-- Delete Van Popup -->
-<div id="deleteVanPopup" class="popup-overlay" style="display: none;">
-    <div class="popup-content">
-        <span id="closeDeleteVanPopup" class="popup-close">&times;</span>
-        <h3>Delete Van</h3>
-        <p id="deleteMessage">Are you sure you want to delete this van?</p>
-        <form id="deleteVanForm" method="post">
-            <button type="submit" class="btn btn-danger mt-2">Yes, Delete</button>
-            <button type="button" id="cancelDeleteBtn" class="btn btn-secondary mt-2">Cancel</button>
-        </form>
-    </div>
-</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+
     // =========================
     // SEARCH BAR
     // =========================
-    function filterVans() {
-        const searchBar = document.getElementById('searchBar');
-        if (!searchBar) return;
-    
-        const query = searchBar.value.toUpperCase();
-        const rows = document
-            .getElementById('vanTable')
-            .getElementsByTagName('tbody')[0]
-            .getElementsByTagName('tr');
-    
-        for (let i = 0; i < rows.length; i++) {
-            const cols = rows[i].getElementsByTagName('td');
-            let rowMatchesQuery = false;
-            const columnsToCheck = [0, 1]; // Van + VIN
-    
-            for (let j = 0; j < columnsToCheck.length; j++) {
-                const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-                if (cellText.includes(query)) {
-                    rowMatchesQuery = true;
-                    break;
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.addEventListener('input', function() {
+            const query = this.value.toUpperCase();
+            const rows = document
+                .getElementById('vanTable')
+                .getElementsByTagName('tbody')[0]
+                .getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cols = rows[i].getElementsByTagName('td');
+                let rowMatchesQuery = false;
+                const columnsToCheck = [0, 1]; // Van + VIN
+
+                for (let j = 0; j < columnsToCheck.length; j++) {
+                    const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                    if (cellText.includes(query)) {
+                        rowMatchesQuery = true;
+                        break;
+                    }
                 }
+                rows[i].style.display = rowMatchesQuery ? '' : 'none';
             }
-            rows[i].style.display = rowMatchesQuery ? '' : 'none';
-        }
+        });
     }
-    
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchBar = document.getElementById('searchBar');
-        if (searchBar) {
-            searchBar.addEventListener('input', filterVans);
-        }
-    
-        // ADD VAN POPUP
-        const openAddBtn  = document.getElementById('openAddVanPopup');
-        const addPopup    = document.getElementById('addVanPopup');
-        const closeAddBtn = document.getElementById('closeAddVanPopup');
-    
-        if (openAddBtn && addPopup && closeAddBtn) {
-            openAddBtn.addEventListener('click', function () {
-                addPopup.style.display = 'block';
-            });
-    
-            closeAddBtn.addEventListener('click', function () {
+
+    // =========================
+    // ADD VAN POPUP
+    // =========================
+    const openAddBtn = document.getElementById('openAddVanPopup');
+    const addPopup   = document.getElementById('addVanPopup');
+    const closeAddBtn = document.getElementById('closeAddVanPopup');
+
+    if (openAddBtn && addPopup && closeAddBtn) {
+        openAddBtn.addEventListener('click', function () {
+            addPopup.style.display = 'block';
+        });
+
+        closeAddBtn.addEventListener('click', function () {
+            addPopup.style.display = 'none';
+        });
+
+        addPopup.addEventListener('click', function (e) {
+            if (e.target === addPopup) {
                 addPopup.style.display = 'none';
+            }
+        });
+    }
+
+    // =========================
+    // EDIT VAN POPUP 
+    // =========================
+    const editPopup = document.getElementById('editVanPopup');
+    const closeEditBtn = document.getElementById('closeEditVanPopup');
+    const editForm = document.getElementById('editVanForm');
+    const editVanCodeInput = document.getElementById('edit_van_code');
+    const editVinInput = document.getElementById('edit_vin');
+
+    if (editPopup && editForm && editVanCodeInput && editVinInput) {
+        document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const code = this.dataset.code;
+                const vin  = this.dataset.vin;
+                const editUrl = this.dataset.editUrl;
+
+                editVanCodeInput.value = code;
+                editVinInput.value = vin;
+                editForm.action = editUrl;
+
+                editPopup.style.display = 'block';
             });
-    
-            addPopup.addEventListener('click', function (e) {
-                if (e.target === addPopup) {
-                    addPopup.style.display = 'none';
+        });
+
+        if (closeEditBtn) {
+            closeEditBtn.addEventListener('click', function () {
+                editPopup.style.display = 'none';
+            });
+
+            editPopup.addEventListener('click', function (e) {
+                if (e.target === editPopup) {
+                    editPopup.style.display = 'none';
                 }
             });
         }
+    }
+
+    // =========================
+    // DELETE VAN (SweetAlert confirm + success)
+    // =========================
+    document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const row  = this.closest('tr');
+            const code = this.dataset.code;
+            const deleteUrl = this.dataset.deleteUrl;
+
+            Swal.fire({
+                title: 'Delete Van',
+                html: 'Are you sure you want to delete van <strong>' + code + '</strong>?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(deleteUrl, {
+                        method: 'POST'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+
+                        // Remove row from the table
+                        if (row) {
+                            row.remove();
+                        }
+
+                        // Show confirmation popup with van code
+                        Swal.fire({
+                            title: 'Van Deleted',
+                            html: 'Van <strong>' + code + '</strong> has been deleted.',
+                            icon: 'success',
+                            confirmButtonText: 'Close'
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error deleting van:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'There was a problem deleting this van. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'Close'
+                        });
+                    });
+                }
+            });
+        });
     });
-    
-    // =========================
-    // EDIT VAN POPUP (global)
-    // =========================
-    function openEditPopup(button) {
-        console.log('Edit clicked', button.dataset); // shows in console
-    
-        const editPopup       = document.getElementById('editVanPopup');
-        const editForm        = document.getElementById('editVanForm');
-        const editVanCodeInput = document.getElementById('edit_van_code');
-        const editVinInput     = document.getElementById('edit_vin');
-        const closeEditBtn     = document.getElementById('closeEditVanPopup');
-    
-        if (!editPopup || !editForm || !editVanCodeInput || !editVinInput) {
-            console.error('Edit popup elements not found');
-            return;
-        }
-    
-        const code    = button.dataset.code;
-        const vin     = button.dataset.vin;
-        const editUrl = button.dataset.editUrl;
-    
-        editVanCodeInput.value = code;
-        editVinInput.value     = vin;
-        editForm.action        = editUrl;
-    
-        editPopup.style.display = 'block';
-    
-        if (closeEditBtn) {
-            closeEditBtn.onclick = function () {
-                editPopup.style.display = 'none';
-            };
-        }
-    
-        editPopup.onclick = function (e) {
-            if (e.target === editPopup) {
-                editPopup.style.display = 'none';
-            }
-        };
-    }
-    
-    // =========================
-    // DELETE VAN POPUP (global)
-    // =========================
-    function openDeletePopup(button) {
-        console.log('Delete clicked', button.dataset); // shows in console
-    
-        const deletePopup     = document.getElementById('deleteVanPopup');
-        const deleteForm      = document.getElementById('deleteVanForm');
-        const deleteMessage   = document.getElementById('deleteMessage');
-        const closeDeleteBtn  = document.getElementById('closeDeleteVanPopup');
-        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    
-        if (!deletePopup || !deleteForm || !deleteMessage || !cancelDeleteBtn) {
-            console.error('Delete popup elements not found');
-            return;
-        }
-    
-        const code      = button.dataset.code;
-        const deleteUrl = button.dataset.deleteUrl;
-    
-        deleteMessage.textContent = "Are you sure you want to delete van " + code + "?";
-        deleteForm.action         = deleteUrl;
-    
-        deletePopup.style.display = 'block';
-    
-        if (closeDeleteBtn) {
-            closeDeleteBtn.onclick = function () {
-                deletePopup.style.display = 'none';
-            };
-        }
-    
-        cancelDeleteBtn.onclick = function () {
-            deletePopup.style.display = 'none';
-        };
-    
-        deletePopup.onclick = function (e) {
-            if (e.target === deletePopup) {
-                deletePopup.style.display = 'none';
-            }
-        };
-    }
-    </script>
-    
+
+});
+</script>
 
 {% endblock %}
+
