@@ -103,6 +103,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+        // Keep track of original values for the Edit popup
+        let originalCode = '';
+        let originalVin  = '';
+
     
         // =========================
         // SEARCH BAR
@@ -168,14 +173,18 @@
         if (editPopup && editForm && editVanCodeInput && editVinInput) {
             document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    const code    = this.dataset.code;
-                    const vin     = this.dataset.vin;
+                    const code = this.dataset.code;
+                    const vin  = this.dataset.vin;
                     const editUrl = this.dataset.editUrl;
-    
+
+                    // Save original values so we can show "before vs after"
+                    originalCode = code;
+                    originalVin  = vin;
+
                     editVanCodeInput.value = code;
-                    editVinInput.value     = vin;
-                    editForm.action        = editUrl;
-    
+                    editVinInput.value = vin;
+                    editForm.action = editUrl;
+
                     editPopup.style.display = 'block';
                 });
             });
@@ -191,6 +200,44 @@
                     }
                 });
             }
+
+                    // Confirm BEFORE actually submitting the edit form
+                editForm.addEventListener('submit', function (e) {
+                    e.preventDefault();  // stop normal submit for a second
+
+                    const newCode = editVanCodeInput.value.trim().toUpperCase();
+                    const newVin  = editVinInput.value.trim().toUpperCase();
+
+                    // If nothing changed, just submit normally
+                    if (newCode === originalCode && newVin === originalVin) {
+                        this.submit();
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Confirm Edit',
+                        html: `
+                            <div style="text-align:left;">
+                                <p><strong>Van (old):</strong> ${originalCode}</p>
+                                <p><strong>Van (new):</strong> ${newCode}</p>
+                                <hr>
+                                <p><strong>VIN (old):</strong> ${originalVin}</p>
+                                <p><strong>VIN (new):</strong> ${newVin}</p>
+                            </div>
+                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Save Changes',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#b00000'  // or whatever red you used
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Now really submit the form to Flask
+                            editForm.submit();
+                        }
+                    });
+                });
+
         }
     
         // =========================
@@ -227,11 +274,11 @@
     
                             // Show confirmation popup with van code
                             Swal.fire({
-                                title: '<span style="font-size: 2rem; display:block;">🗑</span>Van Deleted',
+                                title: '<span style="font-size: 2.5rem; display:block; margin-bottom: 10px;">🗑</span>Van Deleted',
                                 html: 'Van <strong>' + code + '</strong> has been removed.',
                                 background: '#ffffff',       // white popup
                                 color: '#000000',            // black text
-                                confirmButtonColor: 'Red', // red button
+                                confirmButtonColor: '#b00000',
                                 confirmButtonText: 'Close'
                             });
                         })
