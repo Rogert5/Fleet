@@ -102,154 +102,155 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    // =========================
-    // SEARCH BAR
-    // =========================
-    const searchBar = document.getElementById('searchBar');
-    if (searchBar) {
-        searchBar.addEventListener('input', function() {
-            const query = this.value.toUpperCase();
-            const rows = document
-                .getElementById('vanTable')
-                .getElementsByTagName('tbody')[0]
-                .getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const cols = rows[i].getElementsByTagName('td');
-                let rowMatchesQuery = false;
-                const columnsToCheck = [0, 1]; // Van + VIN
-
-                for (let j = 0; j < columnsToCheck.length; j++) {
-                    const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
-                    if (cellText.includes(query)) {
-                        rowMatchesQuery = true;
-                        break;
+    document.addEventListener('DOMContentLoaded', function () {
+    
+        // =========================
+        // SEARCH BAR
+        // =========================
+        const searchBar = document.getElementById('searchBar');
+        if (searchBar) {
+            searchBar.addEventListener('input', function () {
+                const query = this.value.toUpperCase();
+                const rows = document
+                    .getElementById('vanTable')
+                    .getElementsByTagName('tbody')[0]
+                    .getElementsByTagName('tr');
+    
+                for (let i = 0; i < rows.length; i++) {
+                    const cols = rows[i].getElementsByTagName('td');
+                    let rowMatchesQuery = false;
+                    const columnsToCheck = [0, 1]; // Van + VIN
+    
+                    for (let j = 0; j < columnsToCheck.length; j++) {
+                        const cellText = cols[columnsToCheck[j]].innerText.toUpperCase();
+                        if (cellText.includes(query)) {
+                            rowMatchesQuery = true;
+                            break;
+                        }
                     }
-                }
-                rows[i].style.display = rowMatchesQuery ? '' : 'none';
-            }
-        });
-    }
-
-    // =========================
-    // ADD VAN POPUP
-    // =========================
-    const openAddBtn = document.getElementById('openAddVanPopup');
-    const addPopup   = document.getElementById('addVanPopup');
-    const closeAddBtn = document.getElementById('closeAddVanPopup');
-
-    if (openAddBtn && addPopup && closeAddBtn) {
-        openAddBtn.addEventListener('click', function () {
-            addPopup.style.display = 'block';
-        });
-
-        closeAddBtn.addEventListener('click', function () {
-            addPopup.style.display = 'none';
-        });
-
-        addPopup.addEventListener('click', function (e) {
-            if (e.target === addPopup) {
-                addPopup.style.display = 'none';
-            }
-        });
-    }
-
-    // =========================
-    // EDIT VAN POPUP 
-    // =========================
-    const editPopup = document.getElementById('editVanPopup');
-    const closeEditBtn = document.getElementById('closeEditVanPopup');
-    const editForm = document.getElementById('editVanForm');
-    const editVanCodeInput = document.getElementById('edit_van_code');
-    const editVinInput = document.getElementById('edit_vin');
-
-    if (editPopup && editForm && editVanCodeInput && editVinInput) {
-        document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const code = this.dataset.code;
-                const vin  = this.dataset.vin;
-                const editUrl = this.dataset.editUrl;
-
-                editVanCodeInput.value = code;
-                editVinInput.value = vin;
-                editForm.action = editUrl;
-
-                editPopup.style.display = 'block';
-            });
-        });
-
-        if (closeEditBtn) {
-            closeEditBtn.addEventListener('click', function () {
-                editPopup.style.display = 'none';
-            });
-
-            editPopup.addEventListener('click', function (e) {
-                if (e.target === editPopup) {
-                    editPopup.style.display = 'none';
+                    rows[i].style.display = rowMatchesQuery ? '' : 'none';
                 }
             });
         }
-    }
-
-    // =========================
-    // DELETE VAN (SweetAlert confirm + success)
-    // =========================
-    document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const row  = this.closest('tr');
-            const code = this.dataset.code;
-            const deleteUrl = this.dataset.deleteUrl;
-
-            Swal.fire({
-                title: 'Delete Van',
-                html: 'Are you sure you want to delete van <strong>' + code + '</strong>?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, delete',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#d33'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(deleteUrl, {
-                        method: 'POST'
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-
-                        // Remove row from the table
-                        if (row) {
-                            row.remove();
-                        }
-
-                        // Show confirmation popup with van code
-                        Swal.fire({
-                            title: 'Van Deleted',
-                            html: 'Van <strong>' + code + '</strong> has been removed.',
-                            imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACRUlEQVR4nO2b0W3DMBRFTwIAVgBAJABMgARyAB3IADZABNUAEpAMiAEQgARkgAu2dJIpMEI2vFXZkzqR5v9u9+f8v375+hT8g0VJKvH8gZC8Jt3xJ2C7V78k/IvM8QHc6WhiAhtoYGqEij7gjegHkTsxhAtMYvKXQAvwmN1GUh4gc+1ogF2+jrCOIRaOGCjDuEI1DgY6RwqRP8w730JLGmzgohGNF4gYlGRJZkksCbo2gTt6WjV4sEUiFkgyRi0TmNjXAFX8ghNYoFzJFiNlVA8JPBPImUzuJlTPgwJ5kTSDddUsiZUT6uLJdYstmQO1eGLBkVB0qawfAypNmK2UbpVZwPOp9O/UByl9PjUPdKkb5ZxCaYjuPAqB8Kk+jAUlA4TLXv2FMQpyUMLnruFg8m3UA3h76CXDG4jdMBipyGMMVSZjPC+oO+mgw2MWyPP+8xA4xWIOLN0BEyhhQXY81xHqppTPfGJjO9SdtTWUWxDppprC8oDUun+Sptt2lTPoNt2kACqee2S02XColU71fUzbnZlLJD3zEh6lZA4kK3UZEG3OJb5zSBlFjsrJ0cjrSpcNiQveUFMaErM1FpgrN3lIu2qGf8QPGXsyTRaTEUy5qcVHTVGs7kRQCZVP9xRANX1LhWpXOumYR5ZX2l1TKi5aWNT7mqTYvv12tOwDMbHJsmjbv2fzuTA9LY70I5CotbqvDUQ/XVU3IY70nnXoUiqg9QAAAABJRU5ErkJggg==',
-                            imageHeight: 90,
-                            confirmButtonText: 'Close'
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error deleting van:', error);
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'There was a problem deleting this van. Please try again.',
-                            icon: 'error',
-                            confirmButtonText: 'Close'
-                        });
-                    });
+    
+        // =========================
+        // ADD VAN POPUP
+        // =========================
+        const openAddBtn  = document.getElementById('openAddVanPopup');
+        const addPopup    = document.getElementById('addVanPopup');
+        const closeAddBtn = document.getElementById('closeAddVanPopup');
+    
+        if (openAddBtn && addPopup && closeAddBtn) {
+            openAddBtn.addEventListener('click', function () {
+                addPopup.style.display = 'block';
+            });
+    
+            closeAddBtn.addEventListener('click', function () {
+                addPopup.style.display = 'none';
+            });
+    
+            addPopup.addEventListener('click', function (e) {
+                if (e.target === addPopup) {
+                    addPopup.style.display = 'none';
                 }
             });
+        }
+    
+        // =========================
+        // EDIT VAN POPUP 
+        // =========================
+        const editPopup        = document.getElementById('editVanPopup');
+        const closeEditBtn     = document.getElementById('closeEditVanPopup');
+        const editForm         = document.getElementById('editVanForm');
+        const editVanCodeInput = document.getElementById('edit_van_code');
+        const editVinInput     = document.getElementById('edit_vin');
+    
+        if (editPopup && editForm && editVanCodeInput && editVinInput) {
+            document.querySelectorAll('.edit-van-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const code    = this.dataset.code;
+                    const vin     = this.dataset.vin;
+                    const editUrl = this.dataset.editUrl;
+    
+                    editVanCodeInput.value = code;
+                    editVinInput.value     = vin;
+                    editForm.action        = editUrl;
+    
+                    editPopup.style.display = 'block';
+                });
+            });
+    
+            if (closeEditBtn) {
+                closeEditBtn.addEventListener('click', function () {
+                    editPopup.style.display = 'none';
+                });
+    
+                editPopup.addEventListener('click', function (e) {
+                    if (e.target === editPopup) {
+                        editPopup.style.display = 'none';
+                    }
+                });
+            }
+        }
+    
+        // =========================
+        // DELETE VAN (SweetAlert confirm + success)
+        // =========================
+        document.querySelectorAll('.delete-van-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const row       = this.closest('tr');
+                const code      = this.dataset.code;
+                const deleteUrl = this.dataset.deleteUrl;
+    
+                Swal.fire({
+                    title: 'Delete Van',
+                    html: 'Are you sure you want to delete van <strong>' + code + '</strong>?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#d33'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(deleteUrl, {
+                            method: 'POST'
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+    
+                            // Remove row from the table
+                            if (row) {
+                                row.remove();
+                            }
+    
+                            // Show confirmation popup with van code
+                            Swal.fire({
+                                title: '<span style="font-size: 2rem; display:block;">🗑</span>Van Deleted',
+                                html: 'Van <strong>' + code + '</strong> has been removed.',
+                                background: '#000',      // black panel
+                                color: '#ffd700',        // gold text
+                                confirmButtonColor: '#ffd700',
+                                confirmButtonText: 'Close'
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error deleting van:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'There was a problem deleting this van. Please try again.',
+                                icon: 'error',
+                                confirmButtonText: 'Close'
+                            });
+                        });
+                    }
+                });
+            });
         });
+    
     });
-
-});
-</script>
-
+    </script>
+    
 {% endblock %}
 
