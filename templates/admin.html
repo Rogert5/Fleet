@@ -296,6 +296,74 @@
             });
         });
     
+        // ===============================
+        // ADD VAN — PREFIX VALIDATION
+        // ===============================
+        const addVanForm = document.querySelector('#addVanPopup form');
+
+        if (addVanForm) {
+            addVanForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                let vanCode = document.getElementById('van_code').value.trim().toUpperCase();
+                let vin     = document.getElementById('vin').value.trim().toUpperCase();
+
+                // VALID prefixes
+                const prefix = vanCode.charAt(0);
+                const number = vanCode.substring(1);
+
+                const validPrefix = ['G', 'H', 'L'];
+
+                // If prefix is invalid → suggest the correction
+                if (!validPrefix.includes(prefix)) {
+
+                    // Only proceed if numeric part is valid
+                    if (!/^\d+$/.test(number)) {
+                        Swal.fire({
+                            title: 'Invalid Van Number',
+                            text: 'Van must start with G, H, or L followed by a number (e.g., G5).',
+                            icon: 'error'
+                        });
+                        return;
+                    }
+
+                    // Suggest possible correct vans
+                    Swal.fire({
+                        title: 'Invalid Van Prefix',
+                        html: `
+                            <p>The van <strong>${vanCode}</strong> is not valid.</p>
+                            <p>Did you mean one of these?</p>
+                        `,
+                        showCancelButton: true,
+                        showDenyButton: true,
+                        showConfirmButton: true,
+                        confirmButtonText: `G${number}`,
+                        denyButtonText: `H${number}`,
+                        cancelButtonText: `L${number}`,
+                        confirmButtonColor: '#007bff',
+                        denyButtonColor: '#007bff',
+                        cancelButtonColor: '#007bff',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('van_code').value = `G${number}`;
+                            addVanForm.submit();
+                        } else if (result.isDenied) {
+                            document.getElementById('van_code').value = `H${number}`;
+                            addVanForm.submit();
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            document.getElementById('van_code').value = `L${number}`;
+                            addVanForm.submit();
+                        }
+                    });
+
+                    return; // stop normal submit
+                }
+
+                // If prefix is valid → continue to backend
+                addVanForm.submit();
+            });
+        }
+
     });
     </script>
     
