@@ -292,35 +292,13 @@ def admin():
             flash(f"Van {van_code} already exists.")
             return redirect("/admin")
 
-        # NOTE: we no longer block duplicate VINs here; JS shows a conflict
-        # but we let the DB accept multiple rows with the same VIN.
-
+        # We do NOT block duplicate VINs here; JS only warns.
         new_van = Van(van_code=van_code, vin=vin)
         db.session.add(new_van)
         db.session.commit()
 
         flash(f"Van {van_code} added successfully.")
         return redirect("/admin")
-
-    # GET request: show the admin page with sorted vans
-    vans = Van.query.all()
-
-    def van_sort_key(v):
-        code = (v.van_code or "").upper().strip()
-        prefix_order = {"G": 1, "H": 2, "L": 3}
-        group = 99
-        num = 9999
-        if code:
-            prefix = code[0]
-            group = prefix_order.get(prefix, 98)
-            try:
-                num = int(code[1:])
-            except ValueError:
-                num = 9999
-        return (group, num)
-
-    vans = sorted(vans, key=van_sort_key)
-    return render_template("admin.html", vans=vans)
 
 
     # GET request: show the admin page with sorted vans
