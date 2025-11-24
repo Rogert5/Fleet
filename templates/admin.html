@@ -54,15 +54,6 @@
                         >
                             Delete
                         </button>
-                    
-                        <!-- HARD DELETE (no popup, direct POST) -->
-                        <form method="post"
-                              action="{{ url_for('delete_van', van_id=van.id) }}"
-                              style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-secondary">
-                                Hard Delete
-                            </button>
-                        </form>
                     </td>                    
                 </tr>
             {% endfor %}
