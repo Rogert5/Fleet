@@ -228,8 +228,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Show confirmation popup with van code
                         Swal.fire({
                             title: 'Van Deleted',
-                            html: 'Van <strong>' + code + '</strong> has been deleted.',
-                            icon: 'Deleted',
+                            html: 'Van <strong>' + code + '</strong> has been removed.',
+                            imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACRUlEQVR4nO2b0W3DMBRFTwIAVgBAJABMgARyAB3IADZABNUAEpAMiAEQgARkgAu2dJIpMEI2vFXZkzqR5v9u9+f8v375+hT8g0VJKvH8gZC8Jt3xJ2C7V78k/IvM8QHc6WhiAhtoYGqEij7gjegHkTsxhAtMYvKXQAvwmN1GUh4gc+1ogF2+jrCOIRaOGCjDuEI1DgY6RwqRP8w730JLGmzgohGNF4gYlGRJZkksCbo2gTt6WjV4sEUiFkgyRi0TmNjXAFX8ghNYoFzJFiNlVA8JPBPImUzuJlTPgwJ5kTSDddUsiZUT6uLJdYstmQO1eGLBkVB0qawfAypNmK2UbpVZwPOp9O/UByl9PjUPdKkb5ZxCaYjuPAqB8Kk+jAUlA4TLXv2FMQpyUMLnruFg8m3UA3h76CXDG4jdMBipyGMMVSZjPC+oO+mgw2MWyPP+8xA4xWIOLN0BEyhhQXY81xHqppTPfGJjO9SdtTWUWxDppprC8oDUun+Sptt2lTPoNt2kACqee2S02XColU71fUzbnZlLJD3zEh6lZA4kK3UZEG3OJb5zSBlFjsrJ0cjrSpcNiQveUFMaErM1FpgrN3lIu2qGf8QPGXsyTRaTEUy5qcVHTVGs7kRQCZVP9xRANX1LhWpXOumYR5ZX2l1TKi5aWNT7mqTYvv12tOwDMbHJsmjbv2fzuTA9LY70I5CotbqvDUQ/XVU3IY70nnXoUiqg9QAAAABJRU5ErkJggg==',
+                            imageHeight: 90,
                             confirmButtonText: 'Close'
                         });
                     })
