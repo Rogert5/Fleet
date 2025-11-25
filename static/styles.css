@@ -231,3 +231,8 @@ tbody tr:nth-of-type(odd) {
 .popup-content {
     animation: popupFade 0.2s ease-out;
 }
+
+/* Make SweetAlert always appear on top */
+.swal2-container {
+    z-index: 9999 !important;
+}
