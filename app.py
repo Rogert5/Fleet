@@ -153,12 +153,6 @@ with app.app_context():
 
 
 
-# SECOND COPY (safe because models are already defined)
-def convert_utc_to_cst(utc_time):
-    cst_offset = timedelta(hours=-6)
-    return utc_time + cst_offset
-
-    
 @app.route("/inbox/delete-entry", methods=["POST"])
 def delete_entry():
     entry_id = request.json.get("entryId")
